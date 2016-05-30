@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_vocab"
+        android:icon="@drawable/ic_menu_manage"
+        android:title="Vokabeln verwalten" />
+    <item
+        android:id="@+id/nav_stats"
+        android:title="Statistiken" />
+
+    <item android:title="Trainingsmethode">
+        <menu>
+            <group android:checkableBehavior="single" >
+                <item
+                    android:id="@+id/nav_mc"
+                    android:icon="@drawable/ic_menu_slideshow"
+                    android:title="Multiple Choice" />
+                <item
+                    android:id="@+id/nav_freetext"
+                    android:icon="@drawable/ic_menu_slideshow"
+                    android:title="Freitext" />
+            </group>
+
+        </menu>
+    </item>
+
+    <item android:title="Training anpassen">
+        <menu>
+            <item
+                android:id="@+id/nav_changeset"
+                android:icon="@drawable/ic_menu_gallery"
+                android:title="Vokabelset" />
+            <item
+                android:id="@+id/nav_changelang"
+                android:icon="@mipmap/ic_chat_bubble_black_24dp"
+                android:title="Abfragesprache" />
+        </menu>
+    </item>
+
+
+</menu>
