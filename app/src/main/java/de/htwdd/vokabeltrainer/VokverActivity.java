@@ -3,14 +3,22 @@ package de.htwdd.vokabeltrainer;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.ArrayList;
+
+import de.htwdd.vokabeltrainer.helper.DBHelper;
 
 public class VokverActivity extends AppCompatActivity {
 
@@ -31,6 +39,31 @@ public class VokverActivity extends AppCompatActivity {
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Log.d("DEBUG", "Hier könnte Liste befuellt werden.");
+        DBHelper db = new DBHelper(this);
+        ArrayList array_list = db.getAllVocabSets();
+        //ArrayList array_list = db.getAllWords();
+
+        ArrayAdapter arrayAdapter=new ArrayAdapter(this, android.R.layout.simple_list_item_1, array_list);
+        ListView lv = (ListView)findViewById(R.id.listView);
+        lv.setAdapter(arrayAdapter);
+
+        Log.d("DEBUG", Integer.toString(db.getVocabGroupCount(1)));
+
+        //ArrayList<Cursor> vocs = db.getVocabWords(1, 1);
+        ArrayList<Cursor> vocs = db.getRandomVocabWords(1);
+
+        for (int i = 0; i < vocs.size(); i++) {
+            Log.d("DEBUG", "* Woerter Sprache " + Integer.toString(i));
+
+            while (vocs.get(i).isAfterLast() == false) {
+                Log.d("DEBUG", vocs.get(i).getString(1));
+                vocs.get(i).moveToNext();
+            }
+        }
+
+
     }
 
     @Override
