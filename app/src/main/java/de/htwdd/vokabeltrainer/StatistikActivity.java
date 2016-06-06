@@ -40,7 +40,6 @@ public class StatistikActivity extends AppCompatActivity {
         bc = (HorizontalBarChart) findViewById(R.id.bchart);
         setDataPie(3, 100);
         setDataBar(100, 100);
-
     }
 
     private void setDataPie(int count, float range) {
