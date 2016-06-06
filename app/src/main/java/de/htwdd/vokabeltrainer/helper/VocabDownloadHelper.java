@@ -1,8 +1,11 @@
 package de.htwdd.vokabeltrainer.helper;
 
+import android.content.Context;
+import android.os.Debug;
 import android.util.Log;
 import android.util.Xml;
 
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -14,11 +17,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
+import de.htwdd.vokabeltrainer.VokverActivity;
+
 /**
  * Created by alex on 6/3/16.
  */
 public class VocabDownloadHelper {
-    public static final String CONTENT_DOWNLOAD_URL = "http://hpvag.de/vokabeltrainer/content.xml";
+    private Context ctx;
+    public static final String DOWNLOAD_BASE_URL = "http://hpvag.de/vokabeltrainer/";
+    public static final String CONTENT_FILE = "content.xml";
+
+    public VocabDownloadHelper(Context ctx) {
+        this.ctx = ctx;
+    }
 
     /*
      * Haelt Informationen ueber downloadbare Vokabeldateien. Wird beim
@@ -58,7 +69,7 @@ public class VocabDownloadHelper {
         ArrayList<DownloadableVocSet> vocs = new ArrayList();
 
         try {
-            xml_input_stream = downloadFile(CONTENT_DOWNLOAD_URL);
+            xml_input_stream = downloadFile(DOWNLOAD_BASE_URL + CONTENT_FILE);
 
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -161,6 +172,28 @@ public class VocabDownloadHelper {
                     depth++;
                     break;
             }
+        }
+    }
+
+    public void downloadAndInstallVocabSet(String filename) {
+        try {
+            InputStream json_input_stream;
+            json_input_stream = downloadFile(DOWNLOAD_BASE_URL + filename);
+
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(json_input_stream, "utf-8"), 8);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line + "\n");
+            }
+
+            DBHelper db = new DBHelper(this.ctx);
+            db.createVocabSetFromJSONString(stringBuilder.toString());
+        } catch (Exception e) {
+            // Nothing....
+            e.printStackTrace();
         }
     }
 }
