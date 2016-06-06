@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -19,6 +20,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import de.htwdd.vokabeltrainer.helper.DBHelper;
+import de.htwdd.vokabeltrainer.helper.LanguageHelper;
+import de.htwdd.vokabeltrainer.helper.VocabDownloadHelper;
 
 public class VokverActivity extends AppCompatActivity {
 
@@ -42,10 +45,15 @@ public class VokverActivity extends AppCompatActivity {
 
         Log.d("DEBUG", "Hier könnte Liste befuellt werden.");
         DBHelper db = new DBHelper(this);
-        ArrayList array_list = db.getAllVocabSets();
-        //ArrayList array_list = db.getAllWords();
+        ArrayList<DBHelper.VocabSets> array_list = db.getAllVocabSets();
+        ArrayList list_items = new <String>ArrayList();
+        LanguageHelper lh = new LanguageHelper();
 
-        ArrayAdapter arrayAdapter=new ArrayAdapter(this, android.R.layout.simple_list_item_1, array_list);
+        for (DBHelper.VocabSets entry : array_list) {
+            list_items.add(entry.description + " (" + lh.getLanguageNameByCode(entry.lang1) + " - " + lh.getLanguageNameByCode(entry.lang2) + ")");
+        }
+
+        ArrayAdapter arrayAdapter=new ArrayAdapter(this, android.R.layout.simple_list_item_1, list_items);
         ListView lv = (ListView)findViewById(R.id.listView);
         lv.setAdapter(arrayAdapter);
 
@@ -85,10 +93,13 @@ public class VokverActivity extends AppCompatActivity {
             //=====================================================================================================
             //Download verfügbarer Sets auswählen und starten
             //=====================================================================================================
+            /* Testcode */
+           new AsyncVocabDownloadHelper().execute();
+
             /**
              * TODO: Verfügbare Downloads dynamisch abrufen und bei Klick herunterladen und in DB speichern
              */
-            String choice_download[]= {"Advanced Business", "Advanced Alltag", "technisches Englisch", "Präsentationen", "Verhandlungen", "verschiedene Fachbegriffe"};
+            /*String choice_download[]= {"Advanced Business", "Advanced Alltag", "technisches Englisch", "Präsentationen", "Verhandlungen", "verschiedene Fachbegriffe", "Foo"};
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Sprachpakete herunterladen")
                     .setItems(choice_download,  new DialogInterface.OnClickListener() {
@@ -97,11 +108,53 @@ public class VokverActivity extends AppCompatActivity {
                             // of the selected item
                         }
                     });
-            builder.create().show();
+            builder.create().show();*/
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    /*
+     * Innere Klasse, da Download von Dateien asyncron erfolgen muss
+     */
+    private class AsyncVocabDownloadHelper extends AsyncTask<Void, Void, ArrayList<VocabDownloadHelper.DownloadableVocSet>> {
+        @Override
+        protected ArrayList<VocabDownloadHelper.DownloadableVocSet> doInBackground(Void... params) {
+            Log.d("DEBUG", "rufe downloadFile()");
+
+            return VocabDownloadHelper.getDownloadableVocabSets();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<VocabDownloadHelper.DownloadableVocSet> dvs) {
+            String choice_download[] = new String[dvs.size()];
+
+            for (int i = 0; i < dvs.size(); i++) choice_download[i] = dvs.get(i).description + " (" + dvs.get(i).lang1 + " - " + dvs.get(i).lang2 + ")";
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(VokverActivity.this);
+            builder.setTitle("Sprachpakete herunterladen")
+                    .setItems(choice_download,  new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // The 'which' argument contains the index position
+                            // of the selected item
+                        }
+                    });
+            builder.create().show();
+            /*if (!isAdded()) // Ist Fragment noch aktiv?
+                return;
+
+            final Activity activity = getActivity();
+
+            // Set Progressbar Gone
+            final ProgressBar progressBar = (ProgressBar) activity.findViewById(R.id.progressBar);
+            progressBar.setVisibility(View.GONE);
+
+            if (bitmap != null) {
+                final ImageView imageView = (ImageView) activity.findViewById(R.id.imageView);
+                imageView.setImageBitmap(bitmap);
+                Toast.makeText(activity.getApplicationContext(), "Bild geladen! Breite: " + bitmap.getWidth() + " Höhe: " + bitmap.getHeight(), Toast.LENGTH_SHORT).show();
+            } else Toast.makeText(activity.getApplicationContext(), "Bild konnte nicht geladen werden!", Toast.LENGTH_SHORT).show();*/
+        }
+    }
 }
