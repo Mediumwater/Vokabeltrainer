@@ -11,6 +11,7 @@ import android.view.View;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -22,6 +23,9 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
+
+import de.htwdd.vokabeltrainer.helper.DBHelper;
+import de.htwdd.vokabeltrainer.helper.LanguageHelper;
 
 public class StatistikActivity extends AppCompatActivity {
 
@@ -38,8 +42,20 @@ public class StatistikActivity extends AppCompatActivity {
 
         pc = (PieChart) findViewById(R.id.chart);
         bc = (HorizontalBarChart) findViewById(R.id.bchart);
+
+        bc.setDescription("");
+        bc.setDrawGridBackground(false);
+
+        YAxis yl = bc.getAxisLeft();
+        yl.setAxisMinValue(0f);
+        yl.setAxisMaxValue(1f);
+
+        YAxis yr = bc.getAxisRight();
+        yr.setAxisMinValue(0f);
+        yr.setAxisMaxValue(1f);
+
         setDataPie(3, 100);
-        setDataBar(100, 100);
+        setDataBar();
     }
 
     private void setDataPie(int count, float range) {
@@ -101,14 +117,25 @@ public class StatistikActivity extends AppCompatActivity {
         pc.invalidate();
     }
 
-    private void setDataBar(int count, float range) {
+    private void setDataBar(/*int count, int range*/) {
 
         ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
         ArrayList<String> xVals = new ArrayList<String>();
 
-        for (int i = 0; i < count; i++) {
+        DBHelper db = new DBHelper(this);
+        ArrayList<DBHelper.VocabSets> vocabsets = db.getAllVocabSetsWithRatio();
+        LanguageHelper lh = new LanguageHelper();
+
+        /*for (int i = 0; i < count; i++) {
             xVals.add("" + i);
             yVals1.add(new BarEntry((float) (Math.random() * range), i));
+        }*/
+
+        int i = 0;
+        for (DBHelper.VocabSets e : vocabsets) {
+            xVals.add(e.description + " (" + lh.getLanguageNameByCode(e.lang1) + " - " + lh.getLanguageNameByCode(e.lang2) + ")");
+            yVals1.add(new BarEntry((float) e.ratio, i));
+            i++;
         }
 
         BarDataSet set1;

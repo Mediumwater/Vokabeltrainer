@@ -32,7 +32,7 @@
             <com.github.mikephil.charting.charts.HorizontalBarChart
                 android:id="@+id/bchart"
                 android:layout_width="match_parent"
-                android:layout_height="1000dp" />
+                android:layout_height="200dp" />
         </LinearLayout>
     </ScrollView>
 
