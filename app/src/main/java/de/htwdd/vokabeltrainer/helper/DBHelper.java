@@ -1,5 +1,6 @@
 package de.htwdd.vokabeltrainer.helper;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -7,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -45,7 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, PRIMARY KEY (SetID, WordA, WordB))");
 
         /*** Testcode - spaeter entfernen ***/
-        db.execSQL("INSERT INTO VocabSets (Lang1, Lang2, Description) VALUES (\"en\", \"de\", \"Alltag\")");
+        /*db.execSQL("INSERT INTO VocabSets (Lang1, Lang2, Description) VALUES (\"en\", \"de\", \"Alltag\")");
         db.execSQL("INSERT INTO VocabSets (Lang1, Lang2, Description) VALUES (\"en\", \"de\", \"IT\")");
 
         db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (1, \"en\", \"to be allowed to\")");
@@ -205,7 +207,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (86, \"de\", \"kennen\")");
         db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (87, \"de\", \"wissen\")");
         db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 25, 85, 86)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 25, 85, 87)");
+        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 25, 85, 87)");*/
 
         Log.d("DEBUG", "Datenbank kreiert.");
     }
@@ -327,6 +329,8 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     public ArrayList<Cursor> getRandomVocabWords(int setid) {
         int cnt = this.getVocabGroupCount(setid);
+        if (cnt <= 0) return new ArrayList<Cursor>();
+
         Random random = new Random();
 
         return this.getVocabWords(setid, random.nextInt(cnt) + 1);
@@ -336,13 +340,84 @@ public class DBHelper extends SQLiteOpenHelper {
      * Erzeugt ein Vokabel-Set anhand eines JSON-Strings. Gibt true zurueck bei Erfolg, sonst false.
      */
     public boolean createVocabSetFromJSONString(String json) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
         try {
             JSONObject jsonObject = (new JSONObject(json));
 
-            Log.d("DEBUG", "Die Beschreibung lautet: " + jsonObject.getString("description"));
+            /*Log.d("DEBUG", "Die Beschreibung lautet: " + jsonObject.getString("description"));
+            Log.d("DEBUG", "Die erste Sprache lautet: " + jsonObject.getString("lang1"));
+            Log.d("DEBUG", "Die zweite Sprache lautet: " + jsonObject.getString("lang2"));
+
+            //Log.d("DEBUG", "Wordgroups: " + jsonObject.getJSONArray("WordsA").length());
+            Log.d("DEBUG", jsonObject.getJSONArray("WordsA").getString(0) + " - " + jsonObject.getJSONArray("WordsB").getString(0));*/
+
+            String lang1 = jsonObject.getString("lang1");
+            String lang2 = jsonObject.getString("lang2");
+
+            db.beginTransaction();
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("Description", jsonObject.getString("description"));
+            contentValues.put("Lang1", lang1);
+            contentValues.put("Lang2", lang2);
+
+            Long newSetId = db.insert("VocabSets", null, contentValues);
+            Log.d("DEBUG", "The new entrys ID is: " + newSetId);
+
+            JSONArray jsonWordsA =  jsonObject.getJSONArray("WordsA");
+            JSONArray jsonWordsB =  jsonObject.getJSONArray("WordsB");
+
+            /* Woerter und Wort-Relationen in DB uebernehmen. */
+            for(int i = 0; i < jsonWordsA.length(); i++){
+                ArrayList<Long> newWordsAID = new ArrayList();
+                ArrayList<Long> newWordsBID = new ArrayList();
+
+                /* Woerter der Sprache 1 uebernehmen. */
+                for (String word : jsonWordsA.getString(i).split(";")) {
+                    ContentValues cvWord = new ContentValues();
+
+                    cvWord.put("Lang", lang1);
+                    cvWord.put("Word", word.trim());
+
+                    newWordsAID.add(db.insert("VocabWords", null, cvWord));
+                    //Log.d("DEBUG", "WordA: " + word);
+                }
+
+                /* Woerter der Sprache 2 uebernehmen */
+                for (String word : jsonWordsB.getString(i).split(";")) {
+                    ContentValues cvWord = new ContentValues();
+
+                    cvWord.put("Lang", lang2);
+                    cvWord.put("Word", word.trim());
+
+                    newWordsBID.add(db.insert("VocabWords", null, cvWord));
+                    //Log.d("DEBUG", "WordB: " + word);
+                }
+
+                /* Relation zwischen den Woertern in Datenbank aufnehmen. */
+                for (Long aID : newWordsAID) {
+                    for (Long bID : newWordsBID) {
+                        ContentValues cvWordRelation = new ContentValues();
+
+                        cvWordRelation.put("SetID", newSetId);
+                        cvWordRelation.put("GroupID", i + 1);
+                        cvWordRelation.put("WordA", aID);
+                        cvWordRelation.put("WordB", bID);
+
+                        db.insert("VocabReleation", null, cvWordRelation);
+                    }
+                }
+            }
+
+            db.setTransactionSuccessful();
+
+            Log.d("DEBUG", "createVocabSetFromJSONString(): Fertig!");
         } catch (Exception e) {
             // Nothing....
             e.printStackTrace();
+        } finally {
+            db.endTransaction();
         }
 
         return true;
