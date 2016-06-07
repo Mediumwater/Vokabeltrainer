@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -24,6 +25,7 @@ import de.htwdd.vokabeltrainer.helper.LanguageHelper;
 import de.htwdd.vokabeltrainer.helper.VocabDownloadHelper;
 
 public class VokverActivity extends AppCompatActivity {
+    private ArrayList<VocabDownloadHelper.DownloadableVocSet> dvs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +96,7 @@ public class VokverActivity extends AppCompatActivity {
             //Download verfügbarer Sets auswählen und starten
             //=====================================================================================================
             /* Testcode */
-           new AsyncVocabDownloadHelper().execute();
+           new AsyncDownloadableVocabSetsHelper().execute();
 
             /**
              * TODO: Verfügbare Downloads dynamisch abrufen und bei Klick herunterladen und in DB speichern
@@ -116,9 +118,21 @@ public class VokverActivity extends AppCompatActivity {
     }
 
     /*
-     * Innere Klasse, da Download von Dateien asyncron erfolgen muss
+     * OnClick-Listener fuer die Auswahl des Vobakel-Sets, welches heruntergeladen und installiert werden soll.
      */
-    private class AsyncVocabDownloadHelper extends AsyncTask<Void, Void, ArrayList<VocabDownloadHelper.DownloadableVocSet>> {
+    final DialogInterface.OnClickListener downloadableVocsetsOnClickListener = new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialoge, int which){
+            //Log.d("DEBUG", Integer.toString(which));
+            Log.d("DEBUG", dvs.get(which).downloadurl);
+            new AsyncDownloadAndInstallVocabSetHelper().execute(dvs.get(which).downloadurl);
+        }
+    };
+
+    /*
+     * Innere Klasse, da Download von Dateien asyncron erfolgen muss. Hier Download und anzeigen der zur Download
+     * verfuegbaren Vokabel-Sets.
+     */
+    private class AsyncDownloadableVocabSetsHelper extends AsyncTask<Void, Void, ArrayList<VocabDownloadHelper.DownloadableVocSet>> {
         @Override
         protected ArrayList<VocabDownloadHelper.DownloadableVocSet> doInBackground(Void... params) {
             Log.d("DEBUG", "rufe downloadFile()");
@@ -128,33 +142,31 @@ public class VokverActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(ArrayList<VocabDownloadHelper.DownloadableVocSet> dvs) {
+            VokverActivity.this.dvs = dvs;
             String choice_download[] = new String[dvs.size()];
 
             for (int i = 0; i < dvs.size(); i++) choice_download[i] = dvs.get(i).description + " (" + dvs.get(i).lang1 + " - " + dvs.get(i).lang2 + ")";
 
             AlertDialog.Builder builder = new AlertDialog.Builder(VokverActivity.this);
-            builder.setTitle("Sprachpakete herunterladen")
-                    .setItems(choice_download,  new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // The 'which' argument contains the index position
-                            // of the selected item
-                        }
-                    });
+            builder.setTitle("Sprachpakete herunterladen").setItems(choice_download,  VokverActivity.this.downloadableVocsetsOnClickListener);
             builder.create().show();
-            /*if (!isAdded()) // Ist Fragment noch aktiv?
-                return;
+        }
+    }
 
-            final Activity activity = getActivity();
+    /*
+     * Asynchrones downloaden und installieren eines Vokabel-Sets.
+     */
+    private class AsyncDownloadAndInstallVocabSetHelper extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... url) {
+            VocabDownloadHelper vdh = new VocabDownloadHelper(VokverActivity.this);
+            vdh.downloadAndInstallVocabSet(url[0]);
+            return null;
+        }
 
-            // Set Progressbar Gone
-            final ProgressBar progressBar = (ProgressBar) activity.findViewById(R.id.progressBar);
-            progressBar.setVisibility(View.GONE);
+        @Override
+        protected void onPostExecute(Void v) {
 
-            if (bitmap != null) {
-                final ImageView imageView = (ImageView) activity.findViewById(R.id.imageView);
-                imageView.setImageBitmap(bitmap);
-                Toast.makeText(activity.getApplicationContext(), "Bild geladen! Breite: " + bitmap.getWidth() + " Höhe: " + bitmap.getHeight(), Toast.LENGTH_SHORT).show();
-            } else Toast.makeText(activity.getApplicationContext(), "Bild konnte nicht geladen werden!", Toast.LENGTH_SHORT).show();*/
         }
     }
 }

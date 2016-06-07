@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -367,5 +369,21 @@ public class DBHelper extends SQLiteOpenHelper {
         Random random = new Random();
 
         return this.getVocabWords(setid, random.nextInt(cnt) + 1);
+    }
+
+    /*
+     * Erzeugt ein Vokabel-Set anhand eines JSON-Strings. Gibt true zurueck bei Erfolg, sonst false.
+     */
+    public boolean createVocabSetFromJSONString(String json) {
+        try {
+            JSONObject jsonObject = (new JSONObject(json));
+
+            Log.d("DEBUG", "Die Beschreibung lautet: " + jsonObject.getString("description"));
+        } catch (Exception e) {
+            // Nothing....
+            e.printStackTrace();
+        }
+
+        return true;
     }
 }
