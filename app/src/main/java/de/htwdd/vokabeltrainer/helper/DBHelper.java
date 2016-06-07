@@ -24,11 +24,26 @@ public class DBHelper extends SQLiteOpenHelper {
         public final String description;
         public final String lang1;
         public final String lang2;
+        public final int hits;
+        public final int misses;
+        public final double ratio;
 
         private VocabSets(String description, String lang1, String lang2) {
             this.description = description;
             this.lang1 = lang1;
             this.lang2 = lang2;
+            this.hits = 0;
+            this.misses = 0;
+            this.ratio = 0;
+        }
+
+        private VocabSets(String description, String lang1, String lang2, int hits, int misses) {
+            this.description = description;
+            this.lang1 = lang1;
+            this.lang2 = lang2;
+            this.hits = hits;
+            this.misses = misses;
+            this.ratio = (double) hits / (double) (hits + misses);
         }
     }
 
@@ -39,8 +54,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE VocabSets (SetID INTEGER PRIMARY KEY, Lang1 CHARACTER NOT NULL, Lang2 CHARACTER NOT NULL, Description VARCHAR NOT NULL)");
-        db.execSQL("CREATE TABLE VocabWords (WordID INTEGER PRIMARY KEY, Lang CHARACTER NOT NULL, Word VARCHAR NOT NULL, Misses INTEGER DEFAULT 0, Hits INTEGER DEFAULT 0)");
-        db.execSQL("CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, PRIMARY KEY (SetID, WordA, WordB))");
+        db.execSQL("CREATE TABLE VocabWords (WordID INTEGER PRIMARY KEY, Lang CHARACTER NOT NULL, Word VARCHAR NOT NULL)");
+        db.execSQL("CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, Misses INTEGER DEFAULT 5, Hits INTEGER DEFAULT 10, PRIMARY KEY (SetID, WordA, WordB))");
 
         /*** Testcode - spaeter entfernen ***/
         db.execSQL("INSERT INTO VocabSets (Lang1, Lang2, Description) VALUES (\"en\", \"de\", \"Alltag\")");
@@ -231,6 +246,30 @@ public class DBHelper extends SQLiteOpenHelper {
 
         while (cur.isAfterLast() == false) {
             al.add(new VocabSets(cur.getString(0), cur.getString(1), cur.getString(2)));
+            cur.moveToNext();
+        }
+
+        return al;
+    }
+
+    /*
+     * Gibt eine Datenstruktur aller vorhadenen Vokabel-Sets mit Statistiken über hits, misses und ratio zurueck.
+     */
+    public ArrayList<VocabSets> getAllVocabSetsWithRatio()
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT s.Description, s.Lang1, s.Lang2, SUM(r.Hits) AS hits, SUM(r.Misses) AS misses " +
+                "FROM VocabSets s " +
+                "INNER JOIN VocabReleation r ON r.SetID = s.SetID " +
+                "GROUP BY s.SetID", null);
+        cur.moveToFirst();
+
+        ArrayList<VocabSets> al = new ArrayList<>();
+
+        //al.add("Testeintrag");
+
+        while (cur.isAfterLast() == false) {
+            al.add(new VocabSets(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
             cur.moveToNext();
         }
 
