@@ -59,7 +59,7 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE VocabSets (SetID INTEGER PRIMARY KEY, Lang1 CHARACTER NOT NULL, Lang2 CHARACTER NOT NULL, Description VARCHAR NOT NULL)");
         db.execSQL("CREATE TABLE VocabWords (WordID INTEGER PRIMARY KEY, Lang CHARACTER NOT NULL, Word VARCHAR NOT NULL)");
-        db.execSQL("CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, Misses INTEGER DEFAULT 5, Hits INTEGER DEFAULT 10, PRIMARY KEY (SetID, WordA, WordB))");
+        db.execSQL("CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, Misses INTEGER, Hits INTEGER, PRIMARY KEY (SetID, WordA, WordB))");
 
         /*** Testcode - spaeter entfernen ***/
         /*db.execSQL("INSERT INTO VocabSets (Lang1, Lang2, Description) VALUES (\"en\", \"de\", \"Alltag\")");
@@ -407,6 +407,8 @@ public class DBHelper extends SQLiteOpenHelper {
             JSONArray jsonWordsA =  jsonObject.getJSONArray("WordsA");
             JSONArray jsonWordsB =  jsonObject.getJSONArray("WordsB");
 
+            Random random = new Random();
+
             /* Woerter und Wort-Relationen in DB uebernehmen. */
             for(int i = 0; i < jsonWordsA.length(); i++){
                 ArrayList<Long> newWordsAID = new ArrayList();
@@ -443,6 +445,10 @@ public class DBHelper extends SQLiteOpenHelper {
                         cvWordRelation.put("GroupID", i + 1);
                         cvWordRelation.put("WordA", aID);
                         cvWordRelation.put("WordB", bID);
+
+                        // TODO: Test-Code, spaeter entfernen!
+                        cvWordRelation.put("Misses", random.nextInt(101));
+                        cvWordRelation.put("Hits", random.nextInt(101));
 
                         db.insert("VocabReleation", null, cvWordRelation);
                     }
