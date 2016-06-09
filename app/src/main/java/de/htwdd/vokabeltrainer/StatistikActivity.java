@@ -9,9 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -49,16 +52,22 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
 
         bc.setDescription("");
         bc.setDrawGridBackground(false);
+        bc.getLegend().setEnabled(false);
+        //bc.setDrawValueAboveBar(true);
 
         YAxis yl = bc.getAxisLeft();
-        yl.setAxisMinValue(0f);
-        yl.setAxisMaxValue(1f);
+        yl.setAxisMinValue(0);
+        yl.setAxisMaxValue(100);
 
         YAxis yr = bc.getAxisRight();
-        yr.setAxisMinValue(0f);
-        yr.setAxisMaxValue(1f);
+        yr.setEnabled(false);
+
+        XAxis xa = bc.getXAxis();
+        xa.setPosition(XAxis.XAxisPosition.BOTTOM_INSIDE);
 
         setDataBar();
+
+        bc.animateY(1000, Easing.EasingOption.EaseInOutQuad);
     }
 
 
@@ -80,7 +89,7 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
         int i = 0;
         for (DBHelper.VocabSets e : vocabsets) {
             xVals.add(e.description + " (" + lh.getLanguageNameByCode(e.lang1) + " - " + lh.getLanguageNameByCode(e.lang2) + ")");
-            yVals1.add(new BarEntry((float) e.ratio, i));
+            yVals1.add(new BarEntry((float) (e.ratio * 100), i));
             i++;
         }
 
@@ -96,15 +105,25 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
         } else {
             set1 = new BarDataSet(yVals1, "DataSet 1");
 
+            set1.setColor(Color.argb(255, 255, 218, 112));
+
             ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
             dataSets.add(set1);
 
             BarData data = new BarData(xVals, dataSets);
             data.setValueTextSize(10f);
+            data.setValueFormatter(new PercentFormatter());
+            data.setDrawValues(false);
             //data.setValueTypeface(tf);
 
             bc.setData(data);
         }
+
+        //größe der Balken immer gleich, indem die Höhe des gesamten Charts immer an die Anzahl der Balken angepasst wird
+        HorizontalBarChart.LayoutParams params = bc.getLayoutParams();
+        params.height = 200 * i;
+        bc.setLayoutParams(params);
+
     }
 
     /**
@@ -123,7 +142,7 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
         Intent startIntent;
         startIntent = new Intent(getApplicationContext(), StatistikDetailActivity.class);
 
-        startIntent.putExtra("Vokabelset", vs.description);
+        startIntent.putExtra("Description", vs.description);
         startIntent.putExtra("Lang1", vs.lang1);
         startIntent.putExtra("Lang2", vs.lang2);
         startIntent.putExtra("Hits", vs.hits);
