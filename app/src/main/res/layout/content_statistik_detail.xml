@@ -9,21 +9,14 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="de.htwdd.vokabeltrainer.StatistikActivity"
-    tools:showIn="@layout/activity_statistik">
+    tools:context="de.htwdd.vokabeltrainer.StatistikDetailActivity"
+    tools:showIn="@layout/activity_statistik_detail">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/scrollView" >
-
-        <com.github.mikephil.charting.charts.HorizontalBarChart
-            android:id="@+id/bchart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </ScrollView>
-
-
+    <com.github.mikephil.charting.charts.PieChart
+        android:id="@+id/chart"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
