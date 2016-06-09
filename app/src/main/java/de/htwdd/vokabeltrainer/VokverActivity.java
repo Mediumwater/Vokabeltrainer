@@ -45,9 +45,9 @@ public class VokverActivity extends AppCompatActivity {
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Log.d("DEBUG", "Hier könnte Liste befuellt werden.");
+        populateVocabSetsList();
         DBHelper db = new DBHelper(this);
-        ArrayList<DBHelper.VocabSets> array_list = db.getAllVocabSets();
+        /*ArrayList<DBHelper.VocabSets> array_list = db.getAllVocabSets();
         ArrayList list_items = new <String>ArrayList();
         LanguageHelper lh = new LanguageHelper();
 
@@ -57,7 +57,7 @@ public class VokverActivity extends AppCompatActivity {
 
         ArrayAdapter arrayAdapter=new ArrayAdapter(this, android.R.layout.simple_list_item_1, list_items);
         ListView lv = (ListView)findViewById(R.id.listView);
-        lv.setAdapter(arrayAdapter);
+        lv.setAdapter(arrayAdapter);*/
 
         Log.d("DEBUG", Integer.toString(db.getVocabGroupCount(1)));
 
@@ -96,7 +96,7 @@ public class VokverActivity extends AppCompatActivity {
             //Download verfügbarer Sets auswählen und starten
             //=====================================================================================================
             /* Testcode */
-           new AsyncDownloadableVocabSetsHelper().execute();
+            new AsyncDownloadableVocabSetsHelper().execute();
 
             /**
              * TODO: Verfügbare Downloads dynamisch abrufen und bei Klick herunterladen und in DB speichern
@@ -121,12 +121,28 @@ public class VokverActivity extends AppCompatActivity {
      * OnClick-Listener fuer die Auswahl des Vobakel-Sets, welches heruntergeladen und installiert werden soll.
      */
     final DialogInterface.OnClickListener downloadableVocsetsOnClickListener = new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialoge, int which){
+        public void onClick(DialogInterface dialoge, int which) {
             //Log.d("DEBUG", Integer.toString(which));
             Log.d("DEBUG", dvs.get(which).downloadurl);
             new AsyncDownloadAndInstallVocabSetHelper().execute(dvs.get(which).downloadurl);
         }
     };
+
+    public void populateVocabSetsList() {
+        DBHelper db = new DBHelper(this);
+        ArrayList<DBHelper.VocabSets> array_list = db.getAllVocabSets();
+        ArrayList list_items = new <String>ArrayList();
+        LanguageHelper lh = new LanguageHelper();
+
+        for (DBHelper.VocabSets entry : array_list)
+        {
+            list_items.add(entry.description + " (" + lh.getLanguageNameByCode(entry.lang1) + " - " + lh.getLanguageNameByCode(entry.lang2) + ")");
+        }
+
+        ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list_items);
+        ListView lv = (ListView) findViewById(R.id.listView);
+        lv.setAdapter(arrayAdapter);
+    }
 
     /*
      * Innere Klasse, da Download von Dateien asyncron erfolgen muss. Hier Download und anzeigen der zur Download
@@ -166,7 +182,7 @@ public class VokverActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void v) {
-
+            VokverActivity.this.populateVocabSetsList();
         }
     }
 }
