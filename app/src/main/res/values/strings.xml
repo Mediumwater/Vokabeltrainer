@@ -12,4 +12,5 @@
     <string name="title_activity_add_vokabelset">AddVokabelsetActivity</string>
     <string name="title_activity_update_vokabelset">UpdateVokabelsetActivity</string>
     <string name="title_activity_statistik">StatistikActivity</string>
+    <string name="title_activity_statistik_detail">StatistikDetailActivity</string>
 </resources>

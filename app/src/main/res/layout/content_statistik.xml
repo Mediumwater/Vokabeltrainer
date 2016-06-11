@@ -12,28 +12,10 @@
     tools:context="de.htwdd.vokabeltrainer.StatistikActivity"
     tools:showIn="@layout/activity_statistik">
 
-    <ScrollView
+    <com.github.mikephil.charting.charts.HorizontalBarChart
+        android:id="@+id/bchart"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollView" >
+        android:layout_height="match_parent" />
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.github.mikephil.charting.charts.PieChart
-                android:id="@+id/chart"
-                android:layout_width="300dp"
-                android:layout_height="300dp"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true" />
-
-            <com.github.mikephil.charting.charts.HorizontalBarChart
-                android:id="@+id/bchart"
-                android:layout_width="match_parent"
-                android:layout_height="200dp" />
-        </LinearLayout>
-    </ScrollView>
 
 </RelativeLayout>

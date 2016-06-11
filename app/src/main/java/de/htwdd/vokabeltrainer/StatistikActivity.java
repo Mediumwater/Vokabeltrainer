@@ -1,5 +1,6 @@
 package de.htwdd.vokabeltrainer;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -8,9 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -19,7 +23,9 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
@@ -27,10 +33,10 @@ import java.util.ArrayList;
 import de.htwdd.vokabeltrainer.helper.DBHelper;
 import de.htwdd.vokabeltrainer.helper.LanguageHelper;
 
-public class StatistikActivity extends AppCompatActivity {
+public class StatistikActivity extends AppCompatActivity implements OnChartValueSelectedListener {
 
-    public PieChart pc;
     public HorizontalBarChart bc;
+    public ArrayList<DBHelper.VocabSets> vocabsets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,82 +46,31 @@ public class StatistikActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        pc = (PieChart) findViewById(R.id.chart);
+
         bc = (HorizontalBarChart) findViewById(R.id.bchart);
+        bc.setOnChartValueSelectedListener(this);
 
         bc.setDescription("");
         bc.setDrawGridBackground(false);
+        bc.getLegend().setEnabled(false);
+        //bc.setDrawValueAboveBar(true);
 
         YAxis yl = bc.getAxisLeft();
-        yl.setAxisMinValue(0f);
-        yl.setAxisMaxValue(1f);
+        yl.setAxisMinValue(0);
+        yl.setAxisMaxValue(100);
 
         YAxis yr = bc.getAxisRight();
-        yr.setAxisMinValue(0f);
-        yr.setAxisMaxValue(1f);
+        yr.setEnabled(false);
 
-        setDataPie(3, 100);
+        XAxis xa = bc.getXAxis();
+        xa.setPosition(XAxis.XAxisPosition.BOTTOM_INSIDE);
+
         setDataBar();
+
+        bc.animateY(1000, Easing.EasingOption.EaseInOutQuad);
     }
 
-    private void setDataPie(int count, float range) {
 
-        float mult = range;
-
-        ArrayList<Entry> yVals1 = new ArrayList<Entry>();
-
-        // IMPORTANT: In a PieChart, no values (Entry) should have the same
-        // xIndex (even if from different DataSets), since no values can be
-        // drawn above each other.
-        for (int i = 0; i < count + 1; i++) {
-            yVals1.add(new Entry((float) (Math.random() * mult) + mult / 5, i));
-        }
-
-        ArrayList<String> xVals = new ArrayList<String>();
-
-        for (int i = 0; i < count + 1; i++)
-            xVals.add("" + i);
-
-        PieDataSet dataSet = new PieDataSet(yVals1, "Election Results");
-        dataSet.setSliceSpace(3f);
-        dataSet.setSelectionShift(5f);
-
-        // add a lot of colors
-
-        ArrayList<Integer> colors = new ArrayList<Integer>();
-
-        /*for (int c : ColorTemplate.VORDIPLOM_COLORS)
-            colors.add(c);
-
-        for (int c : ColorTemplate.JOYFUL_COLORS)
-            colors.add(c);*/
-
-        for (int c : ColorTemplate.COLORFUL_COLORS)
-            colors.add(c);
-
-        /*for (int c : ColorTemplate.LIBERTY_COLORS)
-            colors.add(c);
-
-        for (int c : ColorTemplate.PASTEL_COLORS)
-            colors.add(c);*/
-
-        //colors.add(ColorTemplate.getHoloBlue());
-
-        dataSet.setColors(colors);
-        //dataSet.setSelectionShift(0f);
-
-        PieData data = new PieData(xVals, dataSet);
-        data.setValueFormatter(new PercentFormatter());
-        data.setValueTextSize(11f);
-        data.setValueTextColor(Color.WHITE);
-        //data.setValueTypeface(tf);
-        pc.setData(data);
-
-        // undo all highlights
-        pc.highlightValues(null);
-
-        pc.invalidate();
-    }
 
     private void setDataBar(/*int count, int range*/) {
 
@@ -123,7 +78,7 @@ public class StatistikActivity extends AppCompatActivity {
         ArrayList<String> xVals = new ArrayList<String>();
 
         DBHelper db = new DBHelper(this);
-        ArrayList<DBHelper.VocabSets> vocabsets = db.getAllVocabSetsWithRatio();
+        vocabsets = db.getAllVocabSetsWithRatio();
         LanguageHelper lh = new LanguageHelper();
 
         /*for (int i = 0; i < count; i++) {
@@ -134,7 +89,7 @@ public class StatistikActivity extends AppCompatActivity {
         int i = 0;
         for (DBHelper.VocabSets e : vocabsets) {
             xVals.add(e.description + " (" + lh.getLanguageNameByCode(e.lang1) + " - " + lh.getLanguageNameByCode(e.lang2) + ")");
-            yVals1.add(new BarEntry((float) e.ratio, i));
+            yVals1.add(new BarEntry((float) (e.ratio * 100), i));
             i++;
         }
 
@@ -150,17 +105,58 @@ public class StatistikActivity extends AppCompatActivity {
         } else {
             set1 = new BarDataSet(yVals1, "DataSet 1");
 
+            set1.setColor(Color.argb(255, 255, 218, 112));
+
             ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
             dataSets.add(set1);
 
             BarData data = new BarData(xVals, dataSets);
             data.setValueTextSize(10f);
+            data.setValueFormatter(new PercentFormatter());
+            data.setDrawValues(false);
             //data.setValueTypeface(tf);
 
             bc.setData(data);
         }
+
+        //größe der Balken immer gleich, indem die Höhe des gesamten Charts immer an die Anzahl der Balken angepasst wird
+        HorizontalBarChart.LayoutParams params = bc.getLayoutParams();
+        params.height = 200 * i;
+        bc.setLayoutParams(params);
+
     }
 
+    /**
+     * Called when a value has been selected inside the chart.
+     *
+     * @param e The selected Entry.
+     * @param dataSetIndex The index in the datasets array of the data object
+     * the Entrys DataSet is in.
+     * @param h the corresponding highlight object that contains information
+     * about the highlighted position
+     */
+    @Override
+    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+        DBHelper.VocabSets vs = vocabsets.get(e.getXIndex());
 
+        Intent startIntent;
+        startIntent = new Intent(getApplicationContext(), StatistikDetailActivity.class);
 
+        startIntent.putExtra("Description", vs.description);
+        startIntent.putExtra("Lang1", vs.lang1);
+        startIntent.putExtra("Lang2", vs.lang2);
+        startIntent.putExtra("Hits", vs.hits);
+        startIntent.putExtra("Misses", vs.misses);
+        startIntent.putExtra("Ratio", vs.ratio);
+
+        startActivity(startIntent);
+    }
+
+    /**
+     * Called when nothing has been selected or an "un-select" has been made.
+     */
+    @Override
+    public void onNothingSelected() {
+        //wird theoretisch für unsere Zwecke nicht gebraucht
+    }
 }
