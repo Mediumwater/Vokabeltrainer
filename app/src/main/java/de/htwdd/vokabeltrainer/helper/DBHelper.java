@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.DebugUtils;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -236,24 +237,15 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /*
-     * Gibt eine Datenstruktur aller vorhadenen Vokabel-Sets zurueck.
+     * Gibt einen Cursor auf alle vorhandenen Vokabel-Sets zurueck.
      */
-    public ArrayList<VocabSets> getAllVocabSets()
+    public Cursor getAllVocabSets()
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cur = db.rawQuery("SELECT Description, Lang1, Lang2 FROM VocabSets", null);
+        Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets", null);
         cur.moveToFirst();
 
-        ArrayList<VocabSets> al = new ArrayList<>();
-
-        //al.add("Testeintrag");
-
-        while (cur.isAfterLast() == false) {
-            al.add(new VocabSets(cur.getString(0), cur.getString(1), cur.getString(2)));
-            cur.moveToNext();
-        }
-
-        return al;
+        return cur;
     }
 
     /*
@@ -466,5 +458,18 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         return true;
+    }
+
+    /*
+     * Loescht das Vokabel-Set mit der gegebenen id.
+     */
+    public void deleteVocabSet(Long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //db.beginTransaction();
+        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE SetID=" + Long.toString(id) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE SetID=" + Long.toString(id) + ")");
+        db.delete("VocabReleation", "SetID=?", new String[] {Long.toString(id)});
+        db.delete("VocabSets", "SetID=?", new String[] {Long.toString(id)});
+        //db.endTransaction();
     }
 }

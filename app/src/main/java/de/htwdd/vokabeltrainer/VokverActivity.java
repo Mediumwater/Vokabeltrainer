@@ -9,17 +9,25 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import de.htwdd.vokabeltrainer.Adapters.VocabSetsCursorAdapter;
 import de.htwdd.vokabeltrainer.helper.DBHelper;
 import de.htwdd.vokabeltrainer.helper.LanguageHelper;
 import de.htwdd.vokabeltrainer.helper.VocabDownloadHelper;
@@ -32,6 +40,7 @@ public class VokverActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vokver);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("Vokabeln verwalten");
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -46,22 +55,9 @@ public class VokverActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         populateVocabSetsList();
-        DBHelper db = new DBHelper(this);
-        /*ArrayList<DBHelper.VocabSets> array_list = db.getAllVocabSets();
-        ArrayList list_items = new <String>ArrayList();
-        LanguageHelper lh = new LanguageHelper();
 
-        for (DBHelper.VocabSets entry : array_list) {
-            list_items.add(entry.description + " (" + lh.getLanguageNameByCode(entry.lang1) + " - " + lh.getLanguageNameByCode(entry.lang2) + ")");
-        }
+        /*DBHelper db = new DBHelper(this);
 
-        ArrayAdapter arrayAdapter=new ArrayAdapter(this, android.R.layout.simple_list_item_1, list_items);
-        ListView lv = (ListView)findViewById(R.id.listView);
-        lv.setAdapter(arrayAdapter);*/
-
-        Log.d("DEBUG", Integer.toString(db.getVocabGroupCount(1)));
-
-        //ArrayList<Cursor> vocs = db.getVocabWords(1, 1);
         ArrayList<Cursor> vocs = db.getRandomVocabWords(1);
 
         for (int i = 0; i < vocs.size(); i++) {
@@ -71,9 +67,7 @@ public class VokverActivity extends AppCompatActivity {
                 Log.d("DEBUG", vocs.get(i).getString(1));
                 vocs.get(i).moveToNext();
             }
-        }
-
-
+        }*/
     }
 
     @Override
@@ -130,18 +124,50 @@ public class VokverActivity extends AppCompatActivity {
 
     public void populateVocabSetsList() {
         DBHelper db = new DBHelper(this);
-        ArrayList<DBHelper.VocabSets> array_list = db.getAllVocabSets();
-        ArrayList list_items = new <String>ArrayList();
         LanguageHelper lh = new LanguageHelper();
 
-        for (DBHelper.VocabSets entry : array_list)
-        {
-            list_items.add(entry.description + " (" + lh.getLanguageNameByCode(entry.lang1) + " - " + lh.getLanguageNameByCode(entry.lang2) + ")");
-        }
-
-        ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list_items);
         ListView lv = (ListView) findViewById(R.id.listView);
-        lv.setAdapter(arrayAdapter);
+        CursorAdapter adapter = new VocabSetsCursorAdapter(this, db.getAllVocabSets(), 0);
+
+        lv.setAdapter(adapter);
+
+        lv.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+            @Override public void onCreateContextMenu(ContextMenu menu, final View v, final ContextMenu.ContextMenuInfo menuInfo) {
+                final String caption = ((TextView)((AdapterView.AdapterContextMenuInfo)menuInfo).targetView).getText().toString();
+
+                menu.setHeaderTitle(caption);
+                menu.add("Löschen")
+                        .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                            @Override public boolean onMenuItemClick(MenuItem item) {
+                                AlertDialog dialog = new AlertDialog.Builder(VokverActivity.this).create();
+                                dialog.setTitle("Vokabel-Set löschen");
+                                dialog.setMessage("Soll das Vokabel-Set " + caption +"  wirklich gelöscht werden?");
+
+                                dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Nein", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) { dialog.cancel(); }
+                                });
+
+                                dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Unbedingt", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+                                        DBHelper db = new DBHelper(VokverActivity.this);
+                                        db.deleteVocabSet(((AdapterView.AdapterContextMenuInfo)menuInfo).id);
+
+                                        VokverActivity.this.populateVocabSetsList();
+
+                                        String toastText = "Vokabel-Set  " + caption + " wurde gelöscht.";
+                                        Toast.makeText(VokverActivity.this, toastText, Toast.LENGTH_SHORT).show();
+
+                                        dialog.cancel();
+                                    }
+                                });
+
+                                dialog.show();
+
+                                return true;
+                            }
+                        });
+            }
+        });
     }
 
     /*
