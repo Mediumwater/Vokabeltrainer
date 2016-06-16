@@ -30,6 +30,15 @@
                 android:value="de.htwdd.vokabeltrainer.MainActivity" />
         </activity>
         <activity
+            android:name=".ManageVokabelset"
+            android:label="@string/title_activity_manage_vokabelset"
+            android:parentActivityName=".VokverActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.htwdd.vokabeltrainer.MainActivity" />
+        </activity>
+        <activity
             android:name=".AddVokabelsetActivity"
             android:label="@string/title_activity_add_vokabelset"
             android:parentActivityName=".VokverActivity"

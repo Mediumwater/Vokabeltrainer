@@ -6,12 +6,20 @@ import java.util.HashMap;
 
 /**
  * Created by alex on 6/4/16.
+ * Singleton-Klasse
  */
 public class LanguageHelper {
+    private static LanguageHelper _instance;
     public final HashMap<String, Integer> langCodes;
     public final ArrayList<String> langNames;
 
-    public LanguageHelper() {
+    public static LanguageHelper getInstance()
+    {
+        if (_instance == null) _instance = new LanguageHelper();
+        return _instance;
+    }
+
+    private LanguageHelper() {
         this.langCodes = new HashMap<String, Integer>();
         this.langNames = new ArrayList<String>();
         int i = 0;

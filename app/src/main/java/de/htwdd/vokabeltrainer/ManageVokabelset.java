@@ -1,0 +1,137 @@
+package de.htwdd.vokabeltrainer;
+
+import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.ActionMenuItemView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TextView;
+
+import de.htwdd.vokabeltrainer.helper.DBHelper;
+import de.htwdd.vokabeltrainer.helper.LanguageHelper;
+
+/**
+ * Created by alex on 6/13/16.
+ */
+public class ManageVokabelset extends AppCompatActivity {
+    //private long id = 0;
+    private DBHelper.VocabSet vs;
+    private Menu _menu;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_manage_vokabelset);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Spinner spinnerLang1 = (Spinner) findViewById(R.id.spinner);
+        Spinner spinnerLang2 = (Spinner) findViewById(R.id.spinner2);
+        LanguageHelper lh = LanguageHelper.getInstance();
+        ArrayAdapter<CharSequence> adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, lh.getLanguageNames());
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinnerLang1.setAdapter(adapter);
+        spinnerLang2.setAdapter(adapter);
+
+        Bundle extras = getIntent().getExtras();
+        long id;
+
+        /* Ein vorhandenes Vokabelset soll bearbeitet werden. */
+        if (extras != null && (id = extras.getLong("id")) > 0) {
+            DBHelper db = new DBHelper(this);
+            vs = db.getVocabSet(id);
+
+        /* Ein neues Vokabelset soll angelegt werden. */
+        } else {
+            vs = new DBHelper.VocabSet();
+        }
+
+        setEtidable(vs.id == 0);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        MenuItem mnuItem;
+
+        if (vs.id == 0) mnuItem = menu.findItem(R.id.action_edit_vocabset);
+        else mnuItem = menu.findItem(R.id.action_cancle_edit_vocabset);
+
+        mnuItem.setVisible(false);
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.managevocabset, menu);
+        this._menu = menu;
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_edit_vocabset:
+                setEtidable(true);
+                return true;
+            case R.id.action_cancle_edit_vocabset:
+                if (vs.id == 0) {
+                    NavUtils.navigateUpFromSameTask(this);
+                } else {
+                    setEtidable(false);
+                }
+
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setEtidable(boolean editable) {
+        final TextView txtDescription = (TextView) findViewById(R.id.editTextDescription);
+        final Spinner spinnerLang1 = (Spinner) findViewById(R.id.spinner);
+        final Spinner spinnerLang2 = (Spinner) findViewById(R.id.spinner2);
+        final Button btnSave = (Button) findViewById(R.id.buttonSave);
+        final LinearLayout elemsNotToEditate = (LinearLayout) findViewById(R.id.elementsNotToEditate);
+
+        txtDescription.setEnabled(editable);
+        spinnerLang1.setEnabled(editable);
+        spinnerLang2.setEnabled(editable);
+        elemsNotToEditate.setVisibility(((editable) ? View.GONE : View.VISIBLE));
+        btnSave.setVisibility(((editable) ? View.VISIBLE : View.GONE));
+
+        if (_menu != null) {
+            _menu.findItem(R.id.action_edit_vocabset).setVisible(!editable);
+            _menu.findItem(R.id.action_cancle_edit_vocabset).setVisible(editable);
+        }
+
+        /* Werte wieder zuruecksetzen, wenn Editiervorgang abgebrochen wurde. */
+        if (!editable) {
+            LanguageHelper lh = LanguageHelper.getInstance();
+
+            txtDescription.setText(vs.description);
+
+            spinnerLang1.setSelection(lh.langCodes.get(vs.lang1));
+            spinnerLang2.setSelection(lh.langCodes.get(vs.lang2));
+
+            TextView tvVocabGroupCount = (TextView) findViewById(R.id.textViewCountVocabGroups);
+            tvVocabGroupCount.setText(Integer.toString(vs.countVocabGroups));
+
+            TextView tvVocabWordCount = (TextView) findViewById(R.id.textViewCountVocabWords);
+            tvVocabWordCount.setText(Integer.toString(vs.countVocabWords));
+        }
+    }
+}

@@ -25,15 +25,29 @@ public class DBHelper extends SQLiteOpenHelper {
     /*
      * Haelt Informationen ueber Vokabel-Sets.
      */
-    public static class VocabSets {
-        public final String description;
-        public final String lang1;
-        public final String lang2;
-        public final int hits;
-        public final int misses;
-        public final double ratio;
+    public static class VocabSet {
+        public long id = 0;
+        public String description = "";
+        public String lang1 = "";
+        public String lang2 = "";
+        public int hits = 0;
+        public int misses = 0;
+        public double ratio = 0;
+        public int countVocabGroups = 0;
+        public int countVocabWords = 0;
 
-        private VocabSets(String description, String lang1, String lang2) {
+        public VocabSet() {}/* {
+            this.id = 0;
+            this.description = "";
+            this.lang1 = "";
+            this.lang2 = "";
+            this.hits = 0;
+            this.misses = 0;
+            this.ratio = 0;
+        }*/
+
+        private VocabSet(String description, String lang1, String lang2) {
+            this.id = 0;
             this.description = description;
             this.lang1 = lang1;
             this.lang2 = lang2;
@@ -42,7 +56,18 @@ public class DBHelper extends SQLiteOpenHelper {
             this.ratio = 0;
         }
 
-        private VocabSets(String description, String lang1, String lang2, int hits, int misses) {
+        private VocabSet(long id, String description, String lang1, String lang2) {
+            this.id = id;
+            this.description = description;
+            this.lang1 = lang1;
+            this.lang2 = lang2;
+            this.hits = 0;
+            this.misses = 0;
+            this.ratio = 0;
+        }
+
+        private VocabSet(String description, String lang1, String lang2, int hits, int misses) {
+            this.id = 0;
             this.description = description;
             this.lang1 = lang1;
             this.lang2 = lang2;
@@ -84,9 +109,32 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /*
+     * Gibt die Grunddaten des Vokabel-Sets mit der gegebenen ID zurück.
+     */
+    public VocabSet getVocabSet(long id)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cur = db.rawQuery("SELECT Description, Lang1, Lang2 FROM VocabSets WHERE SetID=" + Long.toString(id), null);
+        cur.moveToFirst();
+
+        VocabSet vs = new VocabSet(id, cur.getString(0), cur.getString(1), cur.getString(2));
+
+        cur = db.rawQuery("SELECT Max(GroupID) FROM VocabReleation WHERE SetID=" + Long.toString(id), null);
+        cur.moveToFirst();
+        if (!cur.isAfterLast()) vs.countVocabGroups = cur.getInt(0);
+
+        cur = db.rawQuery("SELECT Count(*) FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE SetID=" + Long.toString(id) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE SetID=" + Long.toString(id) + ")", null);
+        cur.moveToFirst();
+        if (!cur.isAfterLast()) vs.countVocabWords = cur.getInt(0);
+
+        return vs;
+    }
+
+    /*
      * Gibt eine Datenstruktur aller vorhadenen Vokabel-Sets mit Statistiken über hits, misses und ratio zurueck.
      */
-    public ArrayList<VocabSets> getAllVocabSetsWithRatio()
+    public ArrayList<VocabSet> getAllVocabSetsWithRatio()
     {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cur = db.rawQuery("SELECT s.Description, s.Lang1, s.Lang2, SUM(r.Hits) AS hits, SUM(r.Misses) AS misses " +
@@ -95,12 +143,12 @@ public class DBHelper extends SQLiteOpenHelper {
                 "GROUP BY s.SetID", null);
         cur.moveToFirst();
 
-        ArrayList<VocabSets> al = new ArrayList<>();
+        ArrayList<VocabSet> al = new ArrayList<>();
 
         //al.add("Testeintrag");
 
         while (cur.isAfterLast() == false) {
-            al.add(new VocabSets(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
+            al.add(new VocabSet(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
             cur.moveToNext();
         }
 
@@ -131,7 +179,7 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     public int getVocabGroupCount(int setid) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return (int) DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation GROUP BY GroupID)");
+        return (int) DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation WHERE SetID = " + Integer.toString(setid) + "GROUP BY GroupID)");
     }
 
     /*

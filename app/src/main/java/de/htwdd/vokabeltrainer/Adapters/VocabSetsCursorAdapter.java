@@ -18,7 +18,7 @@ public class VocabSetsCursorAdapter extends CursorAdapter {
     }
 
     @Override public void bindView(View view, Context context, Cursor cursor) {
-        final LanguageHelper lh = new LanguageHelper();
+        final LanguageHelper lh = LanguageHelper.getInstance();
         TextView textView = (TextView) view;
         textView.setText(cursor.getString(1) + " (" + lh.getLanguageNameByCode(cursor.getString(2)) + " - " + lh.getLanguageNameByCode(cursor.getString(3)) + ")");
     }

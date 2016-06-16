@@ -56,7 +56,7 @@ public class StatistikDetailActivity extends AppCompatActivity {
         pc.setHoleColor(Color.TRANSPARENT);
         pc.getLegend().setEnabled(false);
         pc.setDrawCenterText(true);
-        LanguageHelper lh = new LanguageHelper();
+        LanguageHelper lh = LanguageHelper.getInstance();
         pc.setCenterText(description + " \n" + lh.getLanguageNameByCode(lang1) + " - " + lh.getLanguageNameByCode(lang2));
         pc.setDescription("");
 

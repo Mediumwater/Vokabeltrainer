@@ -31,7 +31,7 @@ public class AddVokabelsetActivity extends AppCompatActivity {
         // Create an ArrayAdapter using the string array and a default spinner layout
         /*ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.languages, android.R.layout.simple_spinner_item);*/
-        LanguageHelper lh = new LanguageHelper();
+        LanguageHelper lh = LanguageHelper.getInstance();
         ArrayAdapter<CharSequence> adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, lh.getLanguageNames());
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

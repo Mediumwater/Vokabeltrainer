@@ -48,7 +48,7 @@ public class VokverActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent startIntent;
-                startIntent = new Intent(getApplicationContext(), AddVokabelsetActivity.class);
+                startIntent = new Intent(getApplicationContext(), ManageVokabelset.class);
                 startActivity(startIntent);
             }
         });
@@ -89,22 +89,8 @@ public class VokverActivity extends AppCompatActivity {
             //=====================================================================================================
             //Download verfügbarer Sets auswählen und starten
             //=====================================================================================================
-            /* Testcode */
             new AsyncDownloadableVocabSetsHelper().execute();
 
-            /**
-             * TODO: Verfügbare Downloads dynamisch abrufen und bei Klick herunterladen und in DB speichern
-             */
-            /*String choice_download[]= {"Advanced Business", "Advanced Alltag", "technisches Englisch", "Präsentationen", "Verhandlungen", "verschiedene Fachbegriffe", "Foo"};
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Sprachpakete herunterladen")
-                    .setItems(choice_download,  new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            // The 'which' argument contains the index position
-                            // of the selected item
-                        }
-                    });
-            builder.create().show();*/
             return true;
         }
 
@@ -124,12 +110,22 @@ public class VokverActivity extends AppCompatActivity {
 
     public void populateVocabSetsList() {
         DBHelper db = new DBHelper(this);
-        LanguageHelper lh = new LanguageHelper();
+        LanguageHelper lh = LanguageHelper.getInstance();
 
         ListView lv = (ListView) findViewById(R.id.listView);
         CursorAdapter adapter = new VocabSetsCursorAdapter(this, db.getAllVocabSets(), 0);
 
         lv.setAdapter(adapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent startIntent;
+                startIntent = new Intent(getApplicationContext(), ManageVokabelset.class);
+                startIntent.putExtra("id", id);
+                startActivity(startIntent);
+            }
+        });
 
         lv.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override public void onCreateContextMenu(ContextMenu menu, final View v, final ContextMenu.ContextMenuInfo menuInfo) {
