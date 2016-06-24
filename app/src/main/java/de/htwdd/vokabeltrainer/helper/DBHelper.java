@@ -148,6 +148,9 @@ public class DBHelper extends SQLiteOpenHelper {
         return al;
     }
 
+
+
+
     /*
      * Gibt die Namen aller Woerter als Array zurueck. Momentan nur fuer Debuging-Zwecke.
      */
@@ -242,6 +245,36 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return this.getVocabWords(setid, random.nextInt(cnt) + 1);
     }
+
+    /*
+     * Wie getRandomVocabWords(int setid), liefert eine zufällige
+     * Wortgruppe aus einem zufälligen Set zurück.
+     *
+     */
+    public ArrayList<VocabSet> getRandomVocabWords() {
+        Cursor cursor = this.getAllVocabSets();
+        int setcount = cursor.getColumnCount(); //Anzahl der Sets
+
+        ArrayList<VocabSet> al = new ArrayList<>();
+
+        if (setcount <= 0) return al;
+
+        Random r = new Random();
+        int nr = (r.nextInt(setcount)+1); // Auswahl zufälliges Set
+
+        ArrayList<Cursor> cur = getRandomVocabWords(nr);
+
+        while (cur.isAfterLast() == false) {
+            al.add(cur.getString(cur.getColumnIndex("Word")));
+            cur.moveToNext();
+        }
+
+
+        return;
+    }
+
+
+
 
     /*
      * Erzeugt ein Vokabel-Set anhand eines JSON-Strings. Gibt true zurueck bei Erfolg, sonst false.

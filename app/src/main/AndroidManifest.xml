@@ -74,6 +74,21 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.htwdd.vokabeltrainer.StatistikActivity" />
         </activity>
+
+
+        <activity
+            android:name=".MultiChoiceActivity"
+            android:label="@string/title_activity_statistik_detail"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.htwdd.vokabeltrainer.MainActivity" />
+        </activity>
+
+
+
+
     </application>
 
 </manifest>

@@ -14,4 +14,7 @@
     <string name="title_activity_update_vokabelset">UpdateVokabelsetActivity</string>
     <string name="title_activity_statistik">StatistikActivity</string>
     <string name="title_activity_statistik_detail">StatistikDetailActivity</string>
+    <string name="title_activity_multichoice">Multiple Choice</string>
+
+
 </resources>

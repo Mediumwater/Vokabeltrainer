@@ -109,15 +109,9 @@ public class MainActivity extends AppCompatActivity
             //=====================================================================================================
             //Auf Trainingsmodus Multiple Choice umschalten, indem Fragment geladen wird
             //=====================================================================================================
-            /**
-             * TODO: Modus im entsprechenden Fragment implementieren und zuletzt verwendeten Modus merken (shared preference)
-             */
-            fragment = new MultichoiceFragment();
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.mainframe, fragment)
-                    .commit();
-
+            startIntent = new Intent(getApplicationContext(), MultiChoiceActivity.class);
+            startActivity(startIntent);
+            return true;
         } else if (id == R.id.nav_freetext) {
             //=====================================================================================================
             //Auf Trainingsmodus Freitext umschalten, indem Fragment geladen wird
