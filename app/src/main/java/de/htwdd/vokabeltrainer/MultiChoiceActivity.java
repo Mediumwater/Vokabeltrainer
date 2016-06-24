@@ -51,9 +51,17 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
 
 
 
-        rndvoc = db.getRandomVocabWords();
+        ArrayList<DBHelper.VocabWord> v = db.getRandomVocabWords();
 
-        rndvoc
+        int i = 0;
+        //for (DBHelper.VocabWord e : v) {
+         //   txt1.setText(e.lang1);
+
+        //}
+
+        //TextView txt12 = (TextView) findViewById(R.id.translatesrc);
+        //txt12.setText("Halloasasasas");
+
 
         LanguageHelper lh = LanguageHelper.getInstance();
 

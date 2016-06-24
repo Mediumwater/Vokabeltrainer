@@ -39,7 +39,7 @@
                 android:id="@+id/translatesrc"
                 android:hint="Translate this"
                 android:layout_gravity="center_horizontal"
-                android:autoText="false" />
+                />
         </LinearLayout>
 
         <Space

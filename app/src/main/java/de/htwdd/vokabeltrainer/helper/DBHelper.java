@@ -10,6 +10,8 @@ import android.os.Debug;
 import android.util.DebugUtils;
 import android.util.Log;
 
+import com.github.mikephil.charting.data.BarEntry;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -69,6 +71,25 @@ public class DBHelper extends SQLiteOpenHelper {
             this.ratio = (double) hits / (double) (hits + misses);
         }
     }
+
+    //Ist der Rückgabewert zur Anfrage nach Vokabeln
+    public static class VocabWord {
+        public long id1 = 0;
+        public long id2 = 0;
+        public String lang1 = "";
+        public String lang2 = "";
+
+        private VocabWord(int id1, String lang1, int id2, String lang2) {
+            this.id1 = id1;
+            this.lang1 = lang1;
+            this.id2 = id2;
+            this.lang2 = lang2;
+        }
+    }
+
+
+
+
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME , null, 1);
@@ -247,30 +268,29 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /*
-     * Wie getRandomVocabWords(int setid), liefert eine zufällige
+     * ArrayList<VocabSet> getRandomVocabWords(), liefert eine zufällige
      * Wortgruppe aus einem zufälligen Set zurück.
      *
      */
-    public ArrayList<VocabSet> getRandomVocabWords() {
+    public ArrayList<VocabWord> getRandomVocabWords() {
         Cursor cursor = this.getAllVocabSets();
         int setcount = cursor.getColumnCount(); //Anzahl der Sets
 
-        ArrayList<VocabSet> al = new ArrayList<>();
+        ArrayList<VocabWord> al = new ArrayList<>();
 
         if (setcount <= 0) return al;
 
         Random r = new Random();
-        int nr = (r.nextInt(setcount)+1); // Auswahl zufälliges Set
+        int nr = (r.nextInt(setcount)+1); // Auswahl zufälliger Set id
 
-        ArrayList<Cursor> cur = getRandomVocabWords(nr);
+        ArrayList<Cursor> c = getRandomVocabWords(nr);
 
-        while (cur.isAfterLast() == false) {
-            al.add(cur.getString(cur.getColumnIndex("Word")));
-            cur.moveToNext();
-        }
+        //for (Cursor cur : c) {
+         //   al.add(new VocabWord(cur.getInt(0) ,cur.getString(1) ,cur.getInt(2), cur.getString(3)));
+         //   cur.moveToNext();
+        //}
 
-
-        return;
+        return al;
     }
 
 
