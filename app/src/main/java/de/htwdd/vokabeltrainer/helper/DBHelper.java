@@ -278,19 +278,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Random r = new Random();
         int nr = (r.nextInt(setcount)); // Auswahl zufälliger Set id
-        ArrayList<Cursor> c = getRandomVocabWords(nr);
+        ArrayList<Cursor> c = getRandomVocabWords(1); //reset this to get real random, but not all set match the
+        if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in DBHelper"); return al;}
         for (Cursor cur : c) {
            al.add(new VocabWord(cur.getInt(0) ,cur.getString(1)));
-            Log.d("asdasdasdas", cur.getString(0));
-            Log.d("asdfadfasdasUG", cur.getString(1));
-
-
-
             cur.moveToNext();
         }
-
-        Log.d("DEBUG","Hier");
-
         return al;
     }
 

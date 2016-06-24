@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +25,13 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
 
     public TextView[] choice = new TextView[4] ;
     private TextView src;
+    ArrayList<DBHelper.VocabWord> secret;
+    public TextView secrettv;
+
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,14 +52,10 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
         dst3.setOnClickListener(this);
         dst4.setOnClickListener(this);
 
-        Log.d("DEBUG","!");
-
         choice[0] = dst1;
         choice[1] = dst2;
         choice[2] = dst3;
         choice[3] = dst4;
-
-        Log.d("DEBUG","!");
 
         setVocabularyQuestion();
 
@@ -61,49 +65,63 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
 
     public void setVocabularyQuestion(){
         DBHelper db = new DBHelper(this);
-        Log.d("DEBUG","Oder Hier");
 
         ArrayList<DBHelper.VocabWord> v = db.getRandomVocabWord();
-        Log.d("DEBUG","Hier");
-        Log.d("DEBUG", v.get(0).word);
-
+        this.secret = v;
         src.setText(v.get(0).word);
 
         Random r = new Random();
         int nr = (r.nextInt(4));
 
-        Log.d("DEBUG","asasas");
+
         int i = 0;
         for (TextView tv : choice) {
             if (i == nr){
-                Log.d("DEBUG","aadjhkjjk");
+                secrettv = tv;
                 tv.setText(v.get(1).word);
             }else {
-                Log.d("DEBUG","aadjhkjjasdasdasdasdk");
                 ArrayList<DBHelper.VocabWord> newVok = db.getRandomVocabWord();
                 tv.setText(newVok.get(1).word);
             }
             i++;
         }
-
-
-
-
-
-
-        LanguageHelper lh = LanguageHelper.getInstance();
-
+        //for (TextView tv : choice) {
+       //     tv.setBackgroundColor(Color.WHITE);
+       // }
     }
-
-
 
     @Override
     public void onClick(View view) {
         // do whatever you want here based on the view being passed
+
         TextView v = (TextView) view;
+
+        for (TextView tv : choice) {
+            tv.setBackgroundColor(Color.RED);
+        }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+        }
+
+        this.secrettv.setBackgroundColor(Color.GREEN);
+
+        if (v.getText() == this.secret.get(1).word) {
+            //update db
+        }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+        }
+
+        setVocabularyQuestion();
+
+        /*TextView v = (TextView) view;
         switch(v.getId()) {
             case R.id.choice1:
-                view.setBackgroundColor(Color.GREEN);
+                check();
                 break;
             case R.id.choice2:
                 view.setBackgroundColor(Color.GREEN);
@@ -115,5 +133,6 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
                 view.setBackgroundColor(Color.GREEN);
                 break;
         }
+        */
     }
 }
