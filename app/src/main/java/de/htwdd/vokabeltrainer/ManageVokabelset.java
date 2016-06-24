@@ -1,5 +1,6 @@
 package de.htwdd.vokabeltrainer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -40,6 +41,13 @@ public class ManageVokabelset extends AppCompatActivity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 ManageVokabelset.this.btnSaveOnClick(v);
+            }
+        });
+
+        Button btnEditVocab = (Button) findViewById(R.id.buttonEditWords);
+        btnEditVocab.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                ManageVokabelset.this.btnEditVocab(v);
             }
         });
 
@@ -167,5 +175,12 @@ public class ManageVokabelset extends AppCompatActivity {
 
         this.setEtidable(false);
         Toast.makeText(ManageVokabelset.this, "Vokabel-Set erfolgreich gespeichert!", Toast.LENGTH_LONG).show();
+    }
+
+    public void btnEditVocab(View v) {
+        Intent startIntent;
+        startIntent = new Intent(getApplicationContext(), ManageVocabWordGroups.class);
+        startIntent.putExtra("id", vs.id);
+        startActivity(startIntent);
     }
 }
