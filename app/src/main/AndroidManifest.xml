@@ -74,8 +74,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.htwdd.vokabeltrainer.StatistikActivity" />
         </activity>
-
-
         <activity
             android:name=".MultiChoiceActivity"
             android:label="@string/title_activity_statistik_detail"
@@ -85,10 +83,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.htwdd.vokabeltrainer.MainActivity" />
         </activity>
-
-
-
-
+        <activity
+            android:name=".ManageVocabWordGroups"
+            android:label="@string/title_activity_manage_vocab_word_groups"
+            android:parentActivityName=".ManageVokabelset"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
