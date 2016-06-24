@@ -3,6 +3,7 @@ package de.htwdd.vokabeltrainer.helper;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by alex on 6/4/16.
@@ -204,5 +205,21 @@ public class LanguageHelper {
 
     public String getLanguageNameByCode(String code) {
         return this.langNames.get(this.langCodes.get(code));
+    }
+
+    /*
+     * Liefert bei Index 0 z. B. "ab".
+     */
+    public String getLanguageCodeByIndex(int index) {
+        String code = "";
+
+        for (Map.Entry<String, Integer> entry : this.langCodes.entrySet()) {
+            if (entry.getValue() == index) {
+                code = entry.getKey();
+                break;
+            }
+        }
+
+        return code;
     }
 }

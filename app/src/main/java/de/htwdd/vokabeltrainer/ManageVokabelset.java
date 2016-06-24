@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import de.htwdd.vokabeltrainer.helper.DBHelper;
 import de.htwdd.vokabeltrainer.helper.LanguageHelper;
@@ -34,6 +35,13 @@ public class ManageVokabelset extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Button btnSave = (Button) findViewById(R.id.buttonSave);
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                ManageVokabelset.this.btnSaveOnClick(v);
+            }
+        });
 
         Spinner spinnerLang1 = (Spinner) findViewById(R.id.spinner);
         Spinner spinnerLang2 = (Spinner) findViewById(R.id.spinner2);
@@ -133,5 +141,31 @@ public class ManageVokabelset extends AppCompatActivity {
             TextView tvVocabWordCount = (TextView) findViewById(R.id.textViewCountVocabWords);
             tvVocabWordCount.setText(Integer.toString(vs.countVocabWords));
         }
+    }
+
+    public void btnSaveOnClick(View v) {
+        final TextView txtDescription = (TextView) findViewById(R.id.editTextDescription);
+        final Spinner spinnerLang1 = (Spinner) findViewById(R.id.spinner);
+        final Spinner spinnerLang2 = (Spinner) findViewById(R.id.spinner2);
+        final LanguageHelper lh = LanguageHelper.getInstance();
+
+        vs.description = txtDescription.getText().toString();
+        vs.lang1 = lh.getLanguageCodeByIndex(spinnerLang1.getSelectedItemPosition());
+        vs.lang2 = lh.getLanguageCodeByIndex(spinnerLang2.getSelectedItemPosition());
+
+        if (vs.id == 0) { // Neues Vokabel-Set anlegen.
+            Log.d("DEBUG", "Speichere neues Vokabel-Set.");
+            DBHelper db = new DBHelper(this);
+            long id = db.createVocabSet(vs);
+            vs.id = id;
+        }
+        else { // Bestehendes Vokabel-Set speichern.
+            Log.d("DEBUG", "Speichere bestehendes Vokabel-Set.");
+            DBHelper db = new DBHelper(this);
+            db.updateVocabSet(vs);
+        }
+
+        this.setEtidable(false);
+        Toast.makeText(ManageVokabelset.this, "Vokabel-Set erfolgreich gespeichert!", Toast.LENGTH_LONG).show();
     }
 }

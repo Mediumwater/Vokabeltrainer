@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Debug;
 import android.util.DebugUtils;
 import android.util.Log;
 
@@ -36,15 +37,7 @@ public class DBHelper extends SQLiteOpenHelper {
         public int countVocabGroups = 0;
         public int countVocabWords = 0;
 
-        public VocabSet() {}/* {
-            this.id = 0;
-            this.description = "";
-            this.lang1 = "";
-            this.lang2 = "";
-            this.hits = 0;
-            this.misses = 0;
-            this.ratio = 0;
-        }*/
+        public VocabSet() {}
 
         private VocabSet(String description, String lang1, String lang2) {
             this.id = 0;
@@ -354,5 +347,63 @@ public class DBHelper extends SQLiteOpenHelper {
         db.delete("VocabReleation", "SetID=?", new String[] {Long.toString(id)});
         db.delete("VocabSets", "SetID=?", new String[] {Long.toString(id)});
         //db.endTransaction();
+    }
+
+    /*
+     * Legt ein neues leeres Vokabel-Set an.
+     *
+     * Params:
+     * @vs: Object vom Typ VocabSet, welches den Beschreibungstext und die IDs der beiden Sprachen
+     * enthalten muss
+     *
+     * Return:
+     * ID des neu generierten Vokabel-Sets oder 0 bei einem Fehlschlag.
+     */
+    public long createVocabSet(VocabSet vs) {
+        if (vs.lang1.equals(vs.lang2)) return 0; // Beide Sprachen dieselben sind nicht erlaubt.
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put("Description", vs.description);
+        cv.put("Lang1", vs.lang1);
+        cv.put("Lang2", vs.lang2);
+
+        return db.insert("VocabSets", null, cv);
+    }
+
+    /*
+     * Modifiziert die Basisdaten eines Vokabel-Sets.
+     *
+     * Params:
+     * @vs: Object vom Typ VocabSet, welches die ID des zu modifizierenden Vokabel-Sets, den
+     * Beschreibungstext und die IDs der beiden Sprachen enthalten muss.
+     *
+     * Return:
+     * true, wenn es funktioniert hat, sonst false.
+     */
+    public boolean updateVocabSet(VocabSet vs) {
+        if (vs.lang1.equals(vs.lang2)) return false; // Beide Sprachen dieselben sind nicht erlaubt.
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cur = db.rawQuery("SELECT Lang1 FROM VocabSets WHERE SetID=" + Long.toString(vs.id), null);
+
+        cur.moveToFirst();
+
+        if (cur.isAfterLast()) return false;
+
+        String old_lang1 = cur.getString(0);
+
+        db.execSQL("UPDATE VocabSets SET Description='" + vs.description + "', Lang1='" + vs.lang1 + "', Lang2='" + vs.lang2 + "' WHERE SetID=" + Long.toString(vs.id));
+        Log.d("DEBUG", "UPDATE VocabSets SET Description='" + vs.description + "', Lang1='" + vs.lang1 + "', Lang2='" + vs.lang2 + "' WHERE SetID=" + Long.toString(vs.id));
+
+        // Wort-Datenbank aktualisieren.
+        db.execSQL("UPDATE VocabWords SET Lang = " +
+                "(CASE WHEN Lang = '" + old_lang1 + "' THEN '" + vs.lang2 + "' ELSE '" + vs.lang1 + "' END) WHERE " +
+                "WordID IN(SELECT WordA FROM VocabReleation WHERE SetID=" + Long.toString(vs.id) + ") OR " +
+                "WordID IN(SELECT WordB FROM VocabReleation WHERE SetID=" + Long.toString(vs.id) + ")");
+
+        return true;
     }
 }
