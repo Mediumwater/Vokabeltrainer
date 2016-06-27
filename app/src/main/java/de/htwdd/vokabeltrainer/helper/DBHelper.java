@@ -70,6 +70,17 @@ public class DBHelper extends SQLiteOpenHelper {
             this.misses = misses;
             this.ratio = (double) hits / (double) (hits + misses);
         }
+
+        private VocabSet(int id, String description, String lang1, String lang2, int hits, int misses) {
+            this.id = id;
+            this.description = description;
+            this.lang1 = lang1;
+            this.lang2 = lang2;
+            this.hits = hits;
+            this.misses = misses;
+            this.ratio = (double) hits / (double) (hits + misses);
+        }
+
     }
 
     //Ist der Rückgabewert zur Anfrage nach Vokabeln
@@ -83,11 +94,8 @@ public class DBHelper extends SQLiteOpenHelper {
             this.id = id;
             this.word = word;
         }
+
     }
-
-
-
-
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME , null, 1);
@@ -116,7 +124,6 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets", null);
         cur.moveToFirst();
-
         return cur;
     }
 
@@ -146,7 +153,7 @@ public class DBHelper extends SQLiteOpenHelper {
     /*
      * Gibt eine Datenstruktur aller vorhadenen Vokabel-Sets mit Statistiken über hits, misses und ratio zurueck.
      */
-    public ArrayList<VocabSet> getAllVocabSetsWithRatio()
+    public ArrayList<VocabSet> getAllVocabSetsWithID()
     {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cur = db.rawQuery("SELECT s.Description, s.Lang1, s.Lang2, SUM(r.Hits) AS hits, SUM(r.Misses) AS misses " +
@@ -167,8 +174,26 @@ public class DBHelper extends SQLiteOpenHelper {
         return al;
     }
 
+    public ArrayList<VocabSet> getAllVocabSetsWithRadioandID()
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT s.Description, s.Lang1, s.Lang2, SUM(r.Hits) AS hits, SUM(r.Misses) AS misses " +
+                "FROM VocabSets s " +
+                "INNER JOIN VocabReleation r ON r.SetID = s.SetID " +
+                "GROUP BY s.SetID", null);
+        cur.moveToFirst();
 
+        ArrayList<VocabSet> al = new ArrayList<>();
 
+        //al.add("Testeintrag");
+
+        while (cur.isAfterLast() == false) {
+            al.add(new VocabSet(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
+            cur.moveToNext();
+        }
+
+        return al;
+    }
 
     /*
      * Gibt die Namen aller Woerter als Array zurueck. Momentan nur fuer Debuging-Zwecke.
@@ -263,6 +288,36 @@ public class DBHelper extends SQLiteOpenHelper {
         return this.getVocabWords(setid, random.nextInt(cnt));
     }
 
+
+
+
+
+    public ArrayList<VocabWord> getRandomVocabWord(int setid) {
+        Log.d("DEBUGaaa", setid + "");
+        ArrayList<VocabWord> al = new ArrayList<>();
+        int cnt = this.getVocabGroupCount(setid);
+        if (cnt <= 0) return al;
+        Random random = new Random();
+        Log.d("DEBUGaaa", "Here ia222m");
+        ArrayList<Cursor> cursors = this.getVocabWords(setid, random.nextInt(cnt));
+
+        try {
+            for (Cursor c : cursors) {
+                while (c.moveToNext()) {
+                    Log.d("DEBUGaaa", c.getInt(0) + c.getString(1));
+                    //sl.add(cursor.getString(0));
+                }
+            }
+        } finally {
+           //cursors.close();
+        }
+
+
+
+        return al;
+    }
+
+
     /*
      * ArrayList<VocabSet> getRandomVocabWords(), liefert eine zufällige
      * Wortgruppe aus einem zufälligen Set zurück.
@@ -270,21 +325,35 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     public ArrayList<VocabWord> getRandomVocabWord() {
         Cursor cursor = this.getAllVocabSets();
-        int setcount = cursor.getColumnCount(); //Anzahl der Sets
+        int setcount = cursor.getCount();
         ArrayList<VocabWord> al = new ArrayList<>();
-        if (setcount <= 0) return al; //return if there is no set
-
-        Log.d("DEBUGaaa", String.valueOf(setcount));
-
+        if (setcount <= 0) return al;
+        ArrayList<String> sl = new ArrayList<>();
+        try {
+            while (cursor.moveToNext()) {
+                sl.add(cursor.getString(0));
+            }
+        } finally {
+            cursor.close();
+        }
         Random r = new Random();
-        int nr = (r.nextInt(setcount)); // Auswahl zufälliger Set id
-        ArrayList<Cursor> c = getRandomVocabWords(1); //reset this to get real random, but not all set match the
+        int nr = (r.nextInt(setcount-1));
+        int setid = Integer.parseInt(sl.get(nr));
+        ArrayList<Cursor> c = getRandomVocabWords(setid);
         if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in DBHelper"); return al;}
+
         for (Cursor cur : c) {
-           al.add(new VocabWord(cur.getInt(0) ,cur.getString(1)));
+            al.add(new VocabWord(cur.getInt(0) ,cur.getString(1)));
             cur.moveToNext();
         }
         return al;
+
+       /* Log.d("DEBUGaaa", String.valueOf(setcount));
+        while (cursor.isAfterLast() == false) {
+            Log.d("DEBUGaasdsda", cursor.getString(0) + cursor.getString(1) + cursor.getString(2) + cursor.getString(3));
+                    //cursor.getString(1) + cursor.getString(2) + cursor.getInt(3) + cursor.getInt(4)
+            cursor.moveToNext();
+        }*/
     }
 
 
