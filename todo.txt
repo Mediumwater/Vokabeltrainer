@@ -1,0 +1,6 @@
+*** TODO ***
+
+Es sind doppelte sets möglich
+getAllVocabSets, luiefert 4 einträge zurück, welche alle die id 1 haben und 
+alle Alltag heißen.
+

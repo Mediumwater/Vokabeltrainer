@@ -119,11 +119,9 @@ public class MainActivity extends AppCompatActivity
             /**
              * TODO: Modus im entsprechenden Fragment implementieren und zuletzt verwendeten Modus merken (shared preference)
              */
-            fragment = new FreitextFragment();
-            FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.mainframe, fragment)
-                    .commit();
+            startIntent = new Intent(getApplicationContext(), FreitextActivity.class);
+            startActivity(startIntent);
+            return true;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

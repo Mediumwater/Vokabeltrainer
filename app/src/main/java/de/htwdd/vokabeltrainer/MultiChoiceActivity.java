@@ -3,6 +3,7 @@ package de.htwdd.vokabeltrainer;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -10,7 +11,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.TextView;
+
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -23,14 +31,15 @@ import de.htwdd.vokabeltrainer.helper.LanguageHelper;
  */
 public class MultiChoiceActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public TextView[] choice = new TextView[4] ;
+    public TextView[] choice = new TextView[4];
     private TextView src;
     ArrayList<DBHelper.VocabWord> secret;
     public TextView secrettv;
-
-
-
-
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
 
     @Override
@@ -60,10 +69,13 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
         setVocabularyQuestion();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
 
-    public void setVocabularyQuestion(){
+    public void setVocabularyQuestion() {
         DBHelper db = new DBHelper(this);
 
         ArrayList<DBHelper.VocabWord> v = db.getRandomVocabWord();
@@ -73,21 +85,20 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
         Random r = new Random();
         int nr = (r.nextInt(4));
 
-
         int i = 0;
         for (TextView tv : choice) {
-            if (i == nr){
+            if (i == nr) {
                 secrettv = tv;
                 tv.setText(v.get(1).word);
-            }else {
+            } else {
                 ArrayList<DBHelper.VocabWord> newVok = db.getRandomVocabWord();
                 tv.setText(newVok.get(1).word);
             }
             i++;
         }
         //for (TextView tv : choice) {
-       //     tv.setBackgroundColor(Color.WHITE);
-       // }
+        //     tv.setBackgroundColor(Color.WHITE);
+        // }
     }
 
     @Override
@@ -96,16 +107,11 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
 
         TextView v = (TextView) view;
 
+        //Animation x; !!!!!!!!!!!!!
+
         for (TextView tv : choice) {
             tv.setBackgroundColor(Color.RED);
         }
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-        }
-
-        this.secrettv.setBackgroundColor(Color.GREEN);
 
         if (v.getText() == this.secret.get(1).word) {
             //update db
@@ -116,7 +122,10 @@ public class MultiChoiceActivity extends AppCompatActivity implements View.OnCli
         } catch (InterruptedException e) {
         }
 
+        this.secrettv.setBackgroundColor(Color.GREEN);
+
         setVocabularyQuestion();
+
 
         /*TextView v = (TextView) view;
         switch(v.getId()) {
