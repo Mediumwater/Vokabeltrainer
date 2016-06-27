@@ -153,7 +153,7 @@ public class DBHelper extends SQLiteOpenHelper {
     /*
      * Gibt eine Datenstruktur aller vorhadenen Vokabel-Sets mit Statistiken über hits, misses und ratio zurueck.
      */
-    public ArrayList<VocabSet> getAllVocabSetsWithID()
+    public ArrayList<VocabSet> getAllVocabSetsWithRatio()
     {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cur = db.rawQuery("SELECT s.Description, s.Lang1, s.Lang2, SUM(r.Hits) AS hits, SUM(r.Misses) AS misses " +
