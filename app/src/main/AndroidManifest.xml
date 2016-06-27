@@ -87,7 +87,10 @@
             android:name=".ManageVocabWordGroups"
             android:label="@string/title_activity_manage_vocab_word_groups"
             android:parentActivityName=".ManageVokabelset"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".EditWordGroup"
+            android:parentActivityName=".ManageVocabWordGroups"
+            android:label="Wortgruppe bearbeiten"/>
     </application>
 
 </manifest>
