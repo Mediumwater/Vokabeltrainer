@@ -86,14 +86,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //Ist der Rückgabewert zur Anfrage nach Vokabeln
     public static class VocabWord {
-        public long id = 0;
-        public long id1 = 0;
+        public long wordid = 0;
         public String word = "";
-        public String word1 = "";
+        public int setid;
 
-        private VocabWord(long id, String word) {
-            this.id = id;
+        private VocabWord(long wordid, String word, int setid) {
+            this.wordid = wordid;
             this.word = word;
+            this.setid = setid;
         }
 
     }
@@ -127,6 +127,21 @@ public class DBHelper extends SQLiteOpenHelper {
         cur.moveToFirst();
         return cur;
     }
+
+    public  ArrayList<VocabSet> getAllVocabSetsForMain() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets", null);
+        cur.moveToFirst();
+        ArrayList<VocabSet> al = new ArrayList<VocabSet>();
+        do {
+            al.add(new VocabSet(cur.getInt(0), cur.getString(1), cur.getString(2), cur.getString(3)));
+        } while (cur.moveToNext());
+
+        return al;
+    }
+
+
+
 
     /*
      * Gibt die Grunddaten des Vokabel-Sets mit der gegebenen ID zurück.
@@ -289,18 +304,16 @@ public class DBHelper extends SQLiteOpenHelper {
         return this.getVocabWords(setid, random.nextInt(cnt));
     }
 
-
-
-
-
-    public ArrayList<VocabWord> getRandomVocabWord(int setid) {
+    public ArrayList<ArrayList<VocabWord>> getRandomVocabWord(int setid) {
         Log.d("DEBUGaaa", setid + "");
-        ArrayList<VocabWord> al = new ArrayList<>();
+        ArrayList<ArrayList<VocabWord>> al = new ArrayList<ArrayList<VocabWord>>();
         int cnt = this.getVocabGroupCount(setid);
-        if (cnt <= 0) return al;
+       // if (cnt <= 0) return al;
         Random random = new Random();
         Log.d("DEBUGaaa", "Here ia222m");
         ArrayList<Cursor> cursors = this.getVocabWords(setid, random.nextInt(cnt));
+
+       // Log.d("DEBUGasadasdasdasaa", cursors.get(0).toString() );
 
         try {
             for (Cursor c : cursors) {
@@ -319,34 +332,59 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
+    public boolean updateMisses(int setID, Long wordA_ID, Long wordB_ID ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
+                + " and WordB = " + wordB_ID);
+        return true;
+    }
+
+    public boolean updateHits(int setID, Long wordA_ID, Long wordB_ID ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE VocabReleation SET Hits = Hits + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
+                + " and WordB = " + wordB_ID);
+        return true;
+    }
+
     /*
      * ArrayList<VocabSet> getRandomVocabWords(), liefert eine zufällige
      * Wortgruppe aus einem zufälligen Set zurück.
      *
      */
-    public ArrayList<VocabWord> getRandomVocabWord() {
+    public ArrayList<ArrayList<VocabWord>> getRandomVocabWord() {
         Cursor cursor = this.getAllVocabSets();
         int setcount = cursor.getCount();
-        ArrayList<VocabWord> al = new ArrayList<>();
-        if (setcount <= 0) return al;
+
+        ArrayList<ArrayList<VocabWord>> al = new ArrayList<ArrayList<VocabWord>>();
+
+        if (setcount <= 0) {Log.d("DEBUG", "setcount = " + setcount); return al;}
         ArrayList<String> sl = new ArrayList<>();
+
         try {
-            while (cursor.moveToNext()) {
+            do {
                 sl.add(cursor.getString(0));
-            }
+            } while (cursor.moveToNext());
         } finally {
             cursor.close();
         }
+
         Random r = new Random();
-        int nr = (r.nextInt(setcount-1));
+        int nr = (r.nextInt(setcount));
         int setid = Integer.parseInt(sl.get(nr));
         ArrayList<Cursor> c = getRandomVocabWords(setid);
         if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in DBHelper"); return al;}
 
+        int i = 0;
+        al.add(new ArrayList<VocabWord>());
         for (Cursor cur : c) {
-            al.add(new VocabWord(cur.getInt(0) ,cur.getString(1)));
-            cur.moveToNext();
+            cur.moveToFirst();
+            do {
+                al.get(i).add(new VocabWord(cur.getInt(0), cur.getString(1), setid));
+            } while (cur.moveToNext());
+            al.add(new ArrayList<VocabWord>());
+            i++;
         }
+
         return al;
 
        /* Log.d("DEBUGaaa", String.valueOf(setcount));

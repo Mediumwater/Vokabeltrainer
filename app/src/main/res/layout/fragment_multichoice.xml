@@ -9,8 +9,8 @@
     android:paddingRight="16dp"
     android:paddingTop="16dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="de.htwdd.vokabeltrainer.MultiChoiceActivity"
-    tools:showIn="@layout/activity_multichoice">
+    tools:context="de.htwdd.vokabeltrainer.MultiChoiceFragment"
+    >
 
     <LinearLayout
         android:orientation="vertical"
@@ -52,23 +52,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Medium Text"
-            android:id="@+id/choice1" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Medium Text"
+                android:id="@+id/choice1" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="25dp"
-            android:layout_weight="0.20" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Medium Text"
-            android:id="@+id/choice2" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_weight="0.20" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Medium Text"
+                android:id="@+id/choice2" />
         </LinearLayout>
         <Space
             android:layout_width="match_parent"

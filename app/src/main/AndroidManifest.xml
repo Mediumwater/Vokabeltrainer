@@ -75,37 +75,6 @@
                 android:value="de.htwdd.vokabeltrainer.StatistikActivity" />
         </activity>
         <activity
-            android:name=".MultiChoiceActivity"
-            android:label="@string/title_activity_statistik_detail"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.htwdd.vokabeltrainer.MainActivity" />
-        </activity>
-        <activity
-            android:name=".FreitextActivity"
-            android:label="@string/title_activity_statistik_detail"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.htwdd.vokabeltrainer.MainActivity" />
-        </activity>
-
-        <activity
-            android:name=".FreitextTrainingActivity"
-            android:label="@string/title_activity_statistik_detail"
-            android:parentActivityName=".FreitextActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.htwdd.vokabeltrainer.MainActivity" />
-        </activity>
-
-
-        
-        <activity
             android:name=".ManageVocabWordGroups"
             android:label="@string/title_activity_manage_vocab_word_groups"
             android:parentActivityName=".ManageVokabelset"
@@ -113,7 +82,11 @@
 
         <activity android:name=".EditWordGroup"
             android:parentActivityName=".ManageVocabWordGroups"
-            android:label="Wortgruppe bearbeiten"/>
+            android:label="Wortgruppe bearbeiten">
+        	<meta-data
+           		android:name="com.google.android.gms.version"
+           		android:value="@integer/google_play_services_version" />
+		</activity>
     </application>
 
 </manifest>
