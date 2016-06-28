@@ -48,7 +48,13 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
 
 
         bc = (HorizontalBarChart) findViewById(R.id.bchart);
+
         bc.setOnChartValueSelectedListener(this);
+
+        bc.zoom(0, 1.001f, 0, 0);
+        bc.setPinchZoom(false);
+        bc.setScaleEnabled(false);
+        bc.setDoubleTapToZoomEnabled(false);
 
         bc.setDescription("");
         bc.setDrawGridBackground(false);
@@ -123,6 +129,8 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
         HorizontalBarChart.LayoutParams params = bc.getLayoutParams();
         params.height = 200 * i;
         bc.setLayoutParams(params);
+        if(i > 5)
+            bc.zoom(0, (float) (1 + 0.1*i),0, 0);
 
     }
 
