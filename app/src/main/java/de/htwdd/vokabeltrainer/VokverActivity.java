@@ -1,6 +1,8 @@
 package de.htwdd.vokabeltrainer;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -171,23 +173,52 @@ public class VokverActivity extends AppCompatActivity {
      * verfuegbaren Vokabel-Sets.
      */
     private class AsyncDownloadableVocabSetsHelper extends AsyncTask<Void, Void, ArrayList<VocabDownloadHelper.DownloadableVocSet>> {
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(VokverActivity.this);
+            progressDialog.setMessage("Bitte warten...");
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
         @Override
         protected ArrayList<VocabDownloadHelper.DownloadableVocSet> doInBackground(Void... params) {
-            Log.d("DEBUG", "rufe downloadFile()");
-
-            return VocabDownloadHelper.getDownloadableVocabSets();
+            try {
+                return VocabDownloadHelper.getDownloadableVocabSets();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(ArrayList<VocabDownloadHelper.DownloadableVocSet> dvs) {
-            VokverActivity.this.dvs = dvs;
-            String choice_download[] = new String[dvs.size()];
+            if (dvs == null) {
+                progressDialog.dismiss();
 
-            for (int i = 0; i < dvs.size(); i++) choice_download[i] = dvs.get(i).description + " (" + dvs.get(i).lang1 + " - " + dvs.get(i).lang2 + ")";
+                AlertDialog dialog = new AlertDialog.Builder(VokverActivity.this).create();
+                dialog.setTitle("Fehler");
+                dialog.setMessage("Beim Abrufen der verfügbaren Vokabel-Sets ist ein Fehler aufgetreten.");
+                dialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", (DialogInterface.OnClickListener)null);
+                dialog.show();
+            } else {
+                VokverActivity.this.dvs = dvs;
+                String choice_download[] = new String[dvs.size()];
+                LanguageHelper lh = LanguageHelper.getInstance();
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(VokverActivity.this);
-            builder.setTitle("Sprachpakete herunterladen").setItems(choice_download,  VokverActivity.this.downloadableVocsetsOnClickListener);
-            builder.create().show();
+                for (int i = 0; i < dvs.size(); i++)
+                    choice_download[i] = dvs.get(i).description + " (" + lh.getLanguageNameByCode(dvs.get(i).lang1) + " - " + lh.getLanguageNameByCode(dvs.get(i).lang2) + ")";
+
+                progressDialog.dismiss();
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(VokverActivity.this);
+                builder.setTitle("Sprachpakete herunterladen").setItems(choice_download, VokverActivity.this.downloadableVocsetsOnClickListener);
+                builder.create().show();
+            }
         }
     }
 

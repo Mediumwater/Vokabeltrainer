@@ -26,7 +26,6 @@ public class VocabWordGroupTextualArrayListAdapter extends ArrayAdapter<String[]
             convertView = LayoutInflater.from(this.getContext()).inflate(R.layout.fragment_fragment_vocab_word_group_list_item, parent, false);
         }
 
-        // Hier könnte auch umfangreichere Layouts angezeigt werden
         final TextView textView1 = (TextView) convertView.findViewById(R.id.listView_item1);
         textView1.setText(getItem(position)[0]);
 

@@ -1,5 +1,7 @@
 package de.htwdd.vokabeltrainer;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -156,25 +158,40 @@ public class ManageVokabelset extends AppCompatActivity {
         final Spinner spinnerLang1 = (Spinner) findViewById(R.id.spinner);
         final Spinner spinnerLang2 = (Spinner) findViewById(R.id.spinner2);
         final LanguageHelper lh = LanguageHelper.getInstance();
+        boolean success = false;
+        String errmsg = "Das Vokabel-Set kann nicht gespeichert werden. Bitte überprüfe deine Eingaben.";
 
         vs.description = txtDescription.getText().toString();
         vs.lang1 = lh.getLanguageCodeByIndex(spinnerLang1.getSelectedItemPosition());
         vs.lang2 = lh.getLanguageCodeByIndex(spinnerLang2.getSelectedItemPosition());
 
-        if (vs.id == 0) { // Neues Vokabel-Set anlegen.
-            Log.d("DEBUG", "Speichere neues Vokabel-Set.");
-            DBHelper db = new DBHelper(this);
-            long id = db.createVocabSet(vs);
-            vs.id = id;
-        }
-        else { // Bestehendes Vokabel-Set speichern.
-            Log.d("DEBUG", "Speichere bestehendes Vokabel-Set.");
-            DBHelper db = new DBHelper(this);
-            db.updateVocabSet(vs);
+        if (vs.lang1 == vs.lang2) {
+            errmsg = "Du musst zwei unterschiedliche Sprachen wählen.";
+        } else {
+
+            if (vs.id == 0) { // Neues Vokabel-Set anlegen.
+                Log.d("DEBUG", "Speichere neues Vokabel-Set.");
+                DBHelper db = new DBHelper(this);
+                long id = db.createVocabSet(vs);
+                vs.id = id;
+                if (id > 0) success = true;
+            } else { // Bestehendes Vokabel-Set speichern.
+                Log.d("DEBUG", "Speichere bestehendes Vokabel-Set.");
+                DBHelper db = new DBHelper(this);
+                success = db.updateVocabSet(vs);
+            }
         }
 
-        this.setEtidable(false);
-        Toast.makeText(ManageVokabelset.this, "Vokabel-Set erfolgreich gespeichert!", Toast.LENGTH_LONG).show();
+        if (success) {
+            this.setEtidable(false);
+            Toast.makeText(ManageVokabelset.this, "Vokabel-Set erfolgreich gespeichert!", Toast.LENGTH_LONG).show();
+        } else {
+            AlertDialog dialog = new AlertDialog.Builder(this).create();
+            dialog.setTitle("Fehlerhafte Eingabe");
+            dialog.setMessage(errmsg);
+            dialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", (DialogInterface.OnClickListener)null);
+            dialog.show();
+        }
     }
 
     public void btnEditVocab(View v) {
