@@ -2,6 +2,7 @@ package de.htwdd.vokabeltrainer.helper;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
@@ -548,5 +549,140 @@ public class DBHelper extends SQLiteOpenHelper {
                 "WordID IN(SELECT WordB FROM VocabReleation WHERE SetID=" + Long.toString(vs.id) + ")");
 
         return true;
+    }
+
+    /*
+     * Legt eine neue Wortgruppe in einem Vorhandenen Vokabel-Set an.
+     *
+     * Params:
+     * @setid: ID des Vokabel-Sets, in dem die neue Wort-Gruppe angelegt werden soll.
+     * @words1: Array mit den Wörtern der ersten Sprache.
+     * @words2: Array mit den Wörtern der zweiten Sprache.
+     *
+     * Return:
+     * Die ID der neuen Wort-Gruppe oder 0 im Fehlerfall.
+     */
+    public int insertWordGroup(long setid, String[] words1, String[] words2) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        int next_word_group_id = (int) DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation WHERE SetID = " + Long.toString(setid) + " GROUP BY GroupID)") + 1;
+
+        Log.d("DEBUG", "Next id is " + Integer.toString(next_word_group_id));
+
+        return this._insertWordGroup(db, setid, next_word_group_id, words1, words2);
+    }
+
+    public boolean updateWordGroup(long setid, int wordgroupid, String[] words1, String[] words2) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Ist die ID der zu aktualisierenden Wort-Gruppe größer als die größte der vorkommenden IDs im Set, gibt es die Wort-Gruppe nicht.
+        if (DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation WHERE SetID = " + Long.toString(setid) + " GROUP BY GroupID)") < wordgroupid) return false;
+
+        db.beginTransaction();
+
+        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ")");
+        db.delete("VocabReleation", "SetID=? AND GroupID=?", new String[] {Long.toString(setid), Integer.toString(wordgroupid)});
+
+        if (this._insertWordGroup(db, setid, wordgroupid, words1, words2) == 0) {
+            db.endTransaction();
+            return false;
+        }
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        return true;
+    }
+
+    /*
+     * Legt eine neue Wortgruppe in einem Vorhandenen Vokabel-Set an. (Methode für den privaten Aufruf).
+     *
+     * Params:
+     * @db: SQLiteDatabase-Objekt.
+     * @setid: ID des Vokabel-Sets, in dem die neue Wort-Gruppe angelegt werden soll.
+     * @wordgroupid: ID, die die neue Wort-Gruppe haben soll.
+     * @words1: Array mit den Wörtern der ersten Sprache.
+     * @words2: Array mit den Wörtern der zweiten Sprache.
+     *
+     * Return:
+     * Die ID der neuen Wort-Gruppe oder 0 im Fehlerfall.
+     */
+    private int _insertWordGroup(SQLiteDatabase db, long setid, int wordgroupid, String[] words1, String[] words2) {
+        Cursor cur = db.rawQuery("SELECT Lang1, Lang2 FROM VocabSets WHERE SetID=" + Long.toString(setid), null);
+
+        cur.moveToFirst();
+
+        if (cur.isAfterLast()) return 0;
+
+        int lang1 = cur.getInt(0);
+        int lang2 = cur.getInt(1);
+
+        db.beginTransaction();
+        ArrayList<Long> newWords1ID = new ArrayList();
+        ArrayList<Long> newWords2ID = new ArrayList();
+
+        /* Woerter der Sprache 1 uebernehmen. */
+        for (String word : words1) {
+            word = word.trim();
+
+            if (!word.equals("")) {
+                ContentValues cvWord = new ContentValues();
+
+                cvWord.put("Lang", lang1);
+                cvWord.put("Word", word);
+
+                newWords1ID.add(db.insert("VocabWords", null, cvWord));
+            }
+        }
+
+        /* Woerter der Sprache 2 uebernehmen. */
+        for (String word : words2) {
+            word = word.trim();
+
+            if (!word.equals("")) {
+                ContentValues cvWord = new ContentValues();
+
+                cvWord.put("Lang", lang2);
+                cvWord.put("Word", word);
+
+                newWords2ID.add(db.insert("VocabWords", null, cvWord));
+            }
+        }
+
+        if (newWords1ID.size() == 0 || newWords2ID.size() == 0) {
+            db.endTransaction();
+            return 0;
+        }
+
+        /* Relation zwischen den Woertern in Datenbank aufnehmen. */
+        for (Long ID1 : newWords1ID) {
+            for (Long ID2 : newWords2ID) {
+                ContentValues cvWordRelation = new ContentValues();
+
+                cvWordRelation.put("SetID", setid);
+                cvWordRelation.put("GroupID", wordgroupid);
+                cvWordRelation.put("WordA", ID1);
+                cvWordRelation.put("WordB", ID2);
+
+                db.insert("VocabReleation", null, cvWordRelation);
+            }
+        }
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        return wordgroupid;
+    }
+
+    /*
+     *
+     */
+    public void deleteWordGroup(long setid, int wordgroupid) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ")");
+        db.delete("VocabReleation", "SetID=? AND GroupID=?", new String[] {Long.toString(setid), Integer.toString(wordgroupid)});
+
+        db.execSQL("UPDATE VocabReleation SET GroupID = GroupID - 1 WHERE SetID=" + Long.toString(setid) + " AND GroupID > " + Integer.toString(wordgroupid));
     }
 }
