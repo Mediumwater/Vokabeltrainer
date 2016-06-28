@@ -75,7 +75,7 @@
                 android:value="de.htwdd.vokabeltrainer.StatistikActivity" />
         </activity>
         <activity
-            android:name=".MultiChoiceActivity"
+            android:name=".MultiChoiceFragment"
             android:label="@string/title_activity_statistik_detail"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -83,28 +83,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.htwdd.vokabeltrainer.MainActivity" />
         </activity>
-        <activity
-            android:name=".FreitextActivity"
-            android:label="@string/title_activity_statistik_detail"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.htwdd.vokabeltrainer.MainActivity" />
-        </activity>
-
-        <activity
-            android:name=".FreitextTrainingActivity"
-            android:label="@string/title_activity_statistik_detail"
-            android:parentActivityName=".FreitextActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="de.htwdd.vokabeltrainer.MainActivity" />
-        </activity>
-
-
-        
         <activity
             android:name=".ManageVocabWordGroups"
             android:label="@string/title_activity_manage_vocab_word_groups"
