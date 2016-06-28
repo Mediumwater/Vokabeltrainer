@@ -3,15 +3,24 @@ package de.htwdd.vokabeltrainer.helper;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by alex on 6/4/16.
+ * Singleton-Klasse
  */
 public class LanguageHelper {
+    private static LanguageHelper _instance;
     public final HashMap<String, Integer> langCodes;
     public final ArrayList<String> langNames;
 
-    public LanguageHelper() {
+    public static LanguageHelper getInstance()
+    {
+        if (_instance == null) _instance = new LanguageHelper();
+        return _instance;
+    }
+
+    private LanguageHelper() {
         this.langCodes = new HashMap<String, Integer>();
         this.langNames = new ArrayList<String>();
         int i = 0;
@@ -196,5 +205,21 @@ public class LanguageHelper {
 
     public String getLanguageNameByCode(String code) {
         return this.langNames.get(this.langCodes.get(code));
+    }
+
+    /*
+     * Liefert bei Index 0 z. B. "ab".
+     */
+    public String getLanguageCodeByIndex(int index) {
+        String code = "";
+
+        for (Map.Entry<String, Integer> entry : this.langCodes.entrySet()) {
+            if (entry.getValue() == index) {
+                code = entry.getKey();
+                break;
+            }
+        }
+
+        return code;
     }
 }

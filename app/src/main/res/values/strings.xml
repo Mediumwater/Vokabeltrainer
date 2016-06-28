@@ -9,8 +9,11 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_vokver">VokverActivity</string>
+    <string name="title_activity_manage_vokabelset">Vokabelset verwalten</string>
     <string name="title_activity_add_vokabelset">AddVokabelsetActivity</string>
     <string name="title_activity_update_vokabelset">UpdateVokabelsetActivity</string>
     <string name="title_activity_statistik">StatistikActivity</string>
     <string name="title_activity_statistik_detail">StatistikDetailActivity</string>
+    <string name="title_activity_multichoice">Multiple Choice</string>
+    <string name="title_activity_manage_vocab_word_groups">Vokabeln bearbeiten</string>
 </resources>

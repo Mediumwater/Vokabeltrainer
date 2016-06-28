@@ -2,11 +2,16 @@ package de.htwdd.vokabeltrainer.helper;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Debug;
+import android.util.DebugUtils;
 import android.util.Log;
+
+import com.github.mikephil.charting.data.BarEntry;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,15 +29,21 @@ public class DBHelper extends SQLiteOpenHelper {
     /*
      * Haelt Informationen ueber Vokabel-Sets.
      */
-    public static class VocabSets {
-        public final String description;
-        public final String lang1;
-        public final String lang2;
-        public final int hits;
-        public final int misses;
-        public final double ratio;
+    public static class VocabSet {
+        public long id = 0;
+        public String description = "";
+        public String lang1 = "";
+        public String lang2 = "";
+        public int hits = 0;
+        public int misses = 0;
+        public double ratio = 0;
+        public int countVocabGroups = 0;
+        public int countVocabWords = 0;
 
-        private VocabSets(String description, String lang1, String lang2) {
+        public VocabSet() {}
+
+        private VocabSet(String description, String lang1, String lang2) {
+            this.id = 0;
             this.description = description;
             this.lang1 = lang1;
             this.lang2 = lang2;
@@ -41,7 +52,18 @@ public class DBHelper extends SQLiteOpenHelper {
             this.ratio = 0;
         }
 
-        private VocabSets(String description, String lang1, String lang2, int hits, int misses) {
+        private VocabSet(long id, String description, String lang1, String lang2) {
+            this.id = id;
+            this.description = description;
+            this.lang1 = lang1;
+            this.lang2 = lang2;
+            this.hits = 0;
+            this.misses = 0;
+            this.ratio = 0;
+        }
+
+        private VocabSet(String description, String lang1, String lang2, int hits, int misses) {
+            this.id = 0;
             this.description = description;
             this.lang1 = lang1;
             this.lang2 = lang2;
@@ -49,6 +71,31 @@ public class DBHelper extends SQLiteOpenHelper {
             this.misses = misses;
             this.ratio = (double) hits / (double) (hits + misses);
         }
+
+        private VocabSet(int id, String description, String lang1, String lang2, int hits, int misses) {
+            this.id = id;
+            this.description = description;
+            this.lang1 = lang1;
+            this.lang2 = lang2;
+            this.hits = hits;
+            this.misses = misses;
+            this.ratio = (double) hits / (double) (hits + misses);
+        }
+
+    }
+
+    //Ist der Rückgabewert zur Anfrage nach Vokabeln
+    public static class VocabWord {
+        public long wordid = 0;
+        public String word = "";
+        public int setid;
+
+        private VocabWord(long wordid, String word, int setid) {
+            this.wordid = wordid;
+            this.word = word;
+            this.setid = setid;
+        }
+
     }
 
     public DBHelper(Context context) {
@@ -60,171 +107,6 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE VocabSets (SetID INTEGER PRIMARY KEY, Lang1 CHARACTER NOT NULL, Lang2 CHARACTER NOT NULL, Description VARCHAR NOT NULL)");
         db.execSQL("CREATE TABLE VocabWords (WordID INTEGER PRIMARY KEY, Lang CHARACTER NOT NULL, Word VARCHAR NOT NULL)");
         db.execSQL("CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, Misses INTEGER, Hits INTEGER, PRIMARY KEY (SetID, WordA, WordB))");
-
-        /*** Testcode - spaeter entfernen ***/
-        /*db.execSQL("INSERT INTO VocabSets (Lang1, Lang2, Description) VALUES (\"en\", \"de\", \"Alltag\")");
-        db.execSQL("INSERT INTO VocabSets (Lang1, Lang2, Description) VALUES (\"en\", \"de\", \"IT\")");
-
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (1, \"en\", \"to be allowed to\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (2, \"en\", \"to have the right to\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (3, \"en\", \"to may\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (4, \"en\", \"may\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (5, \"de\", \"dürfen\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 1, 1, 5)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 1, 2, 5)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 1, 3, 5)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 1, 4, 5)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (6, \"en\", \"nine\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (7, \"de\", \"neun\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 2, 6, 7)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (8, \"en\", \"day\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (9, \"de\", \"Tag\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 3, 8, 9)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (10, \"en\", \"which one's\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (11, \"en\", \"of which\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (12, \"en\", \"whose\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (13, \"de\", \"deren\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (14, \"de\", \"dessen\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (15, \"de\", \"wessen\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 10, 13)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 10, 14)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 10, 15)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 11, 13)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 11, 14)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 11, 15)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 12, 13)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 12, 14)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 4, 12, 15)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (16, \"en\", \"should\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (17, \"en\", \"ought to\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (18, \"en\", \"to have to\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (19, \"de\", \"müssen\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (20, \"de\", \"sollen\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 5, 16, 19)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 5, 16, 20)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 5, 17, 19)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 5, 17, 20)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 5, 18, 19)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 5, 18, 20)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (21, \"en\", \"self\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (22, \"en\", \"itself\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (23, \"en\", \"herself\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (24, \"en\", \"himself\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (25, \"de\", \"selber\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (26, \"de\", \"selbst\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 21, 25)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 21, 26)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 22, 25)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 22, 26)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 23, 25)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 23, 26)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 24, 25)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 6, 24, 26)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (27, \"en\", \"nothing\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (28, \"de\", \"nichts\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 7, 27, 28)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (29, \"en\", \"infant\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (30, \"de\", \"Kind\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 8, 29, 30)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (31, \"en\", \"one\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (32, \"de\", \"ein gewisser\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (33, \"de\", \"einer\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (34, \"de\", \"irgend einer\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (35, \"de\", \"irgendwer\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (36, \"de\", \"jemand\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (37, \"de\", \"man\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (38, \"de\", \"ein\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (39, \"de\", \"eine\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (40, \"de\", \"eins\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 32)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 33)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 34)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 35)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 36)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 37)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 38)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 39)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 9, 31, 40)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (41, \"en\", \"small\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (42, \"de\", \"gering\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (43, \"de\", \"klein\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 10, 41, 42)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 10, 41, 43)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (44, \"en\", \"so that\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (45, \"de\", \"damit\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (46, \"de\", \"dass\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 11, 44, 45)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 11, 44, 46)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (47, \"en\", \"an\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (48, \"de\", \"ein gewisser\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (49, \"de\", \"einer\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (50, \"de\", \"irgend einer\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (51, \"de\", \"irgendwer\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (52, \"de\", \"jemand\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (53, \"de\", \"à\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (54, \"de\", \"je\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (55, \"de\", \"zu\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 48)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 49)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 50)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 51)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 52)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 53)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 54)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 12, 47, 55)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (56, \"en\", \"at the rate of\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (57, \"de\", \"à\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (58, \"de\", \"je\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (59, \"de\", \"zu\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 13, 56, 57)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 13, 56, 58)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 13, 56, 59)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (60, \"en\", \"man\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (61, \"de\", \"Mensch\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (62, \"de\", \"Mann\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 14, 60, 61)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 14, 60, 62)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (63, \"en\", \"to be acquainted with\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (64, \"de\", \"kennen\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 15, 63, 64)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (65, \"en\", \"six\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (66, \"de\", \"sechs\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 16, 65, 66)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (67, \"en\", \"everything\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (68, \"de\", \"alles\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 17, 67, 68)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (69, \"en\", \"to lay hold of\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (70, \"de\", \"fassen\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (71, \"de\", \"nehmen\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 18, 69, 70)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 18, 69, 71)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (72, \"en\", \"or\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (73, \"de\", \"oder\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 19, 72, 73)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (74, \"en\", \"ten\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (75, \"de\", \"zehn\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 20, 74, 75)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (76, \"en\", \"three\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (77, \"de\", \"drei\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 21, 76, 77)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (78, \"en\", \"two\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (79, \"de\", \"zwei\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 22, 78, 79)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (80, \"en\", \"five\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (81, \"de\", \"fünf\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 23, 80, 81)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (82, \"en\", \"to travel\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (83, \"de\", \"fahren\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (84, \"de\", \"reisen\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 24, 82, 83)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 24, 82, 84)");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (85, \"en\", \"to know\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (86, \"de\", \"kennen\")");
-        db.execSQL("INSERT INTO VocabWords (WordID, Lang, Word) VALUES (87, \"de\", \"wissen\")");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 25, 85, 86)");
-        db.execSQL("INSERT INTO VocabReleation (SetID, GroupID, WordA, WordB) VALUES (1, 25, 85, 87)");*/
-
-        Log.d("DEBUG", "Datenbank kreiert.");
     }
 
     @Override public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -236,30 +118,58 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /*
-     * Gibt eine Datenstruktur aller vorhadenen Vokabel-Sets zurueck.
+     * Gibt einen Cursor auf alle vorhandenen Vokabel-Sets zurueck.
      */
-    public ArrayList<VocabSets> getAllVocabSets()
+    public Cursor getAllVocabSets()
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cur = db.rawQuery("SELECT Description, Lang1, Lang2 FROM VocabSets", null);
+        Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets", null);
         cur.moveToFirst();
+        return cur;
+    }
 
-        ArrayList<VocabSets> al = new ArrayList<>();
-
-        //al.add("Testeintrag");
-
-        while (cur.isAfterLast() == false) {
-            al.add(new VocabSets(cur.getString(0), cur.getString(1), cur.getString(2)));
-            cur.moveToNext();
-        }
+    public  ArrayList<VocabSet> getAllVocabSetsForMain() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets", null);
+        cur.moveToFirst();
+        ArrayList<VocabSet> al = new ArrayList<VocabSet>();
+        do {
+            al.add(new VocabSet(cur.getInt(0), cur.getString(1), cur.getString(2), cur.getString(3)));
+        } while (cur.moveToNext());
 
         return al;
+    }
+
+
+
+
+    /*
+     * Gibt die Grunddaten des Vokabel-Sets mit der gegebenen ID zurück.
+     */
+    public VocabSet getVocabSet(long id)
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cur = db.rawQuery("SELECT Description, Lang1, Lang2 FROM VocabSets WHERE SetID=" + Long.toString(id), null);
+        cur.moveToFirst();
+
+        VocabSet vs = new VocabSet(id, cur.getString(0), cur.getString(1), cur.getString(2));
+
+        cur = db.rawQuery("SELECT Max(GroupID) FROM VocabReleation WHERE SetID=" + Long.toString(id), null);
+        cur.moveToFirst();
+        if (!cur.isAfterLast()) vs.countVocabGroups = cur.getInt(0);
+
+        cur = db.rawQuery("SELECT Count(*) FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE SetID=" + Long.toString(id) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE SetID=" + Long.toString(id) + ")", null);
+        cur.moveToFirst();
+        if (!cur.isAfterLast()) vs.countVocabWords = cur.getInt(0);
+
+        return vs;
     }
 
     /*
      * Gibt eine Datenstruktur aller vorhadenen Vokabel-Sets mit Statistiken über hits, misses und ratio zurueck.
      */
-    public ArrayList<VocabSets> getAllVocabSetsWithRatio()
+    public ArrayList<VocabSet> getAllVocabSetsWithRatio()
     {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cur = db.rawQuery("SELECT s.Description, s.Lang1, s.Lang2, SUM(r.Hits) AS hits, SUM(r.Misses) AS misses " +
@@ -268,12 +178,33 @@ public class DBHelper extends SQLiteOpenHelper {
                 "GROUP BY s.SetID", null);
         cur.moveToFirst();
 
-        ArrayList<VocabSets> al = new ArrayList<>();
+        ArrayList<VocabSet> al = new ArrayList<>();
 
         //al.add("Testeintrag");
 
         while (cur.isAfterLast() == false) {
-            al.add(new VocabSets(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
+            al.add(new VocabSet(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
+            cur.moveToNext();
+        }
+
+        return al;
+    }
+
+    public ArrayList<VocabSet> getAllVocabSetsWithRadioandID()
+    {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT s.Description, s.Lang1, s.Lang2, SUM(r.Hits) AS hits, SUM(r.Misses) AS misses " +
+                "FROM VocabSets s " +
+                "INNER JOIN VocabReleation r ON r.SetID = s.SetID " +
+                "GROUP BY s.SetID", null);
+        cur.moveToFirst();
+
+        ArrayList<VocabSet> al = new ArrayList<>();
+
+        //al.add("Testeintrag");
+
+        while (cur.isAfterLast() == false) {
+            al.add(new VocabSet(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
             cur.moveToNext();
         }
 
@@ -304,7 +235,7 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     public int getVocabGroupCount(int setid) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return (int) DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation GROUP BY GroupID)");
+        return (int) DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation WHERE SetID = " + Integer.toString(setid) + " GROUP BY GroupID)");
     }
 
     /*
@@ -369,11 +300,103 @@ public class DBHelper extends SQLiteOpenHelper {
     public ArrayList<Cursor> getRandomVocabWords(int setid) {
         int cnt = this.getVocabGroupCount(setid);
         if (cnt <= 0) return new ArrayList<Cursor>();
-
         Random random = new Random();
-
-        return this.getVocabWords(setid, random.nextInt(cnt) + 1);
+        return this.getVocabWords(setid, random.nextInt(cnt));
     }
+
+    public ArrayList<ArrayList<VocabWord>> getRandomVocabWord(int setid) {
+        Log.d("DEBUGaaa", setid + "");
+        ArrayList<ArrayList<VocabWord>> al = new ArrayList<ArrayList<VocabWord>>();
+        int cnt = this.getVocabGroupCount(setid);
+       // if (cnt <= 0) return al;
+        Random random = new Random();
+        Log.d("DEBUGaaa", "Here ia222m");
+        ArrayList<Cursor> cursors = this.getVocabWords(setid, random.nextInt(cnt));
+
+       // Log.d("DEBUGasadasdasdasaa", cursors.get(0).toString() );
+
+        try {
+            for (Cursor c : cursors) {
+                while (c.moveToNext()) {
+                    Log.d("DEBUGaaa", c.getInt(0) + c.getString(1));
+                    //sl.add(cursor.getString(0));
+                }
+            }
+        } finally {
+           //cursors.close();
+        }
+
+
+
+        return al;
+    }
+
+
+    public boolean updateMisses(int setID, Long wordA_ID, Long wordB_ID ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
+                + " and WordB = " + wordB_ID);
+        return true;
+    }
+
+    public boolean updateHits(int setID, Long wordA_ID, Long wordB_ID ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE VocabReleation SET Hits = Hits + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
+                + " and WordB = " + wordB_ID);
+        return true;
+    }
+
+    /*
+     * ArrayList<VocabSet> getRandomVocabWords(), liefert eine zufällige
+     * Wortgruppe aus einem zufälligen Set zurück.
+     *
+     */
+    public ArrayList<ArrayList<VocabWord>> getRandomVocabWord() {
+        Cursor cursor = this.getAllVocabSets();
+        int setcount = cursor.getCount();
+
+        ArrayList<ArrayList<VocabWord>> al = new ArrayList<ArrayList<VocabWord>>();
+
+        if (setcount <= 0) {Log.d("DEBUG", "setcount = " + setcount); return al;}
+        ArrayList<String> sl = new ArrayList<>();
+
+        try {
+            do {
+                sl.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        } finally {
+            cursor.close();
+        }
+
+        Random r = new Random();
+        int nr = (r.nextInt(setcount));
+        int setid = Integer.parseInt(sl.get(nr));
+        ArrayList<Cursor> c = getRandomVocabWords(setid);
+        if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in DBHelper"); return al;}
+
+        int i = 0;
+        al.add(new ArrayList<VocabWord>());
+        for (Cursor cur : c) {
+            cur.moveToFirst();
+            do {
+                al.get(i).add(new VocabWord(cur.getInt(0), cur.getString(1), setid));
+            } while (cur.moveToNext());
+            al.add(new ArrayList<VocabWord>());
+            i++;
+        }
+
+        return al;
+
+       /* Log.d("DEBUGaaa", String.valueOf(setcount));
+        while (cursor.isAfterLast() == false) {
+            Log.d("DEBUGaasdsda", cursor.getString(0) + cursor.getString(1) + cursor.getString(2) + cursor.getString(3));
+                    //cursor.getString(1) + cursor.getString(2) + cursor.getInt(3) + cursor.getInt(4)
+            cursor.moveToNext();
+        }*/
+    }
+
+
+
 
     /*
      * Erzeugt ein Vokabel-Set anhand eines JSON-Strings. Gibt true zurueck bei Erfolg, sonst false.
@@ -466,5 +489,211 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         return true;
+    }
+
+    /*
+     * Loescht das Vokabel-Set mit der gegebenen id.
+     */
+    public void deleteVocabSet(Long id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        //db.beginTransaction();
+        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE SetID=" + Long.toString(id) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE SetID=" + Long.toString(id) + ")");
+        db.delete("VocabReleation", "SetID=?", new String[] {Long.toString(id)});
+        db.delete("VocabSets", "SetID=?", new String[] {Long.toString(id)});
+        //db.endTransaction();
+    }
+
+    /*
+     * Legt ein neues leeres Vokabel-Set an.
+     *
+     * Params:
+     * @vs: Object vom Typ VocabSet, welches den Beschreibungstext und die IDs der beiden Sprachen
+     * enthalten muss
+     *
+     * Return:
+     * ID des neu generierten Vokabel-Sets oder 0 bei einem Fehlschlag.
+     */
+    public long createVocabSet(VocabSet vs) {
+        if (vs.lang1.equals(vs.lang2)) return 0; // Beide Sprachen dieselben sind nicht erlaubt.
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+
+        cv.put("Description", vs.description);
+        cv.put("Lang1", vs.lang1);
+        cv.put("Lang2", vs.lang2);
+
+        return db.insert("VocabSets", null, cv);
+    }
+
+    /*
+     * Modifiziert die Basisdaten eines Vokabel-Sets.
+     *
+     * Params:
+     * @vs: Object vom Typ VocabSet, welches die ID des zu modifizierenden Vokabel-Sets, den
+     * Beschreibungstext und die IDs der beiden Sprachen enthalten muss.
+     *
+     * Return:
+     * true, wenn es funktioniert hat, sonst false.
+     */
+    public boolean updateVocabSet(VocabSet vs) {
+        if (vs.lang1.equals(vs.lang2)) return false; // Beide Sprachen dieselben sind nicht erlaubt.
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cur = db.rawQuery("SELECT Lang1 FROM VocabSets WHERE SetID=" + Long.toString(vs.id), null);
+
+        cur.moveToFirst();
+
+        if (cur.isAfterLast()) return false;
+
+        String old_lang1 = cur.getString(0);
+
+        db.execSQL("UPDATE VocabSets SET Description='" + vs.description + "', Lang1='" + vs.lang1 + "', Lang2='" + vs.lang2 + "' WHERE SetID=" + Long.toString(vs.id));
+        Log.d("DEBUG", "UPDATE VocabSets SET Description='" + vs.description + "', Lang1='" + vs.lang1 + "', Lang2='" + vs.lang2 + "' WHERE SetID=" + Long.toString(vs.id));
+
+        // Wort-Datenbank aktualisieren.
+        db.execSQL("UPDATE VocabWords SET Lang = " +
+                "(CASE WHEN Lang = '" + old_lang1 + "' THEN '" + vs.lang2 + "' ELSE '" + vs.lang1 + "' END) WHERE " +
+                "WordID IN(SELECT WordA FROM VocabReleation WHERE SetID=" + Long.toString(vs.id) + ") OR " +
+                "WordID IN(SELECT WordB FROM VocabReleation WHERE SetID=" + Long.toString(vs.id) + ")");
+
+        return true;
+    }
+
+    /*
+     * Legt eine neue Wortgruppe in einem Vorhandenen Vokabel-Set an.
+     *
+     * Params:
+     * @setid: ID des Vokabel-Sets, in dem die neue Wort-Gruppe angelegt werden soll.
+     * @words1: Array mit den Wörtern der ersten Sprache.
+     * @words2: Array mit den Wörtern der zweiten Sprache.
+     *
+     * Return:
+     * Die ID der neuen Wort-Gruppe oder 0 im Fehlerfall.
+     */
+    public int insertWordGroup(long setid, String[] words1, String[] words2) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        int next_word_group_id = (int) DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation WHERE SetID = " + Long.toString(setid) + " GROUP BY GroupID)") + 1;
+
+        Log.d("DEBUG", "Next id is " + Integer.toString(next_word_group_id));
+
+        return this._insertWordGroup(db, setid, next_word_group_id, words1, words2);
+    }
+
+    public boolean updateWordGroup(long setid, int wordgroupid, String[] words1, String[] words2) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Ist die ID der zu aktualisierenden Wort-Gruppe größer als die größte der vorkommenden IDs im Set, gibt es die Wort-Gruppe nicht.
+        if (DatabaseUtils.queryNumEntries(db, "(SELECT COUNT(GroupID) FROM VocabReleation WHERE SetID = " + Long.toString(setid) + " GROUP BY GroupID)") < wordgroupid) return false;
+
+        db.beginTransaction();
+
+        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ")");
+        db.delete("VocabReleation", "SetID=? AND GroupID=?", new String[] {Long.toString(setid), Integer.toString(wordgroupid)});
+
+        if (this._insertWordGroup(db, setid, wordgroupid, words1, words2) == 0) {
+            db.endTransaction();
+            return false;
+        }
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        return true;
+    }
+
+    /*
+     * Legt eine neue Wortgruppe in einem Vorhandenen Vokabel-Set an. (Methode für den privaten Aufruf).
+     *
+     * Params:
+     * @db: SQLiteDatabase-Objekt.
+     * @setid: ID des Vokabel-Sets, in dem die neue Wort-Gruppe angelegt werden soll.
+     * @wordgroupid: ID, die die neue Wort-Gruppe haben soll.
+     * @words1: Array mit den Wörtern der ersten Sprache.
+     * @words2: Array mit den Wörtern der zweiten Sprache.
+     *
+     * Return:
+     * Die ID der neuen Wort-Gruppe oder 0 im Fehlerfall.
+     */
+    private int _insertWordGroup(SQLiteDatabase db, long setid, int wordgroupid, String[] words1, String[] words2) {
+        Cursor cur = db.rawQuery("SELECT Lang1, Lang2 FROM VocabSets WHERE SetID=" + Long.toString(setid), null);
+
+        cur.moveToFirst();
+
+        if (cur.isAfterLast()) return 0;
+
+        int lang1 = cur.getInt(0);
+        int lang2 = cur.getInt(1);
+
+        db.beginTransaction();
+        ArrayList<Long> newWords1ID = new ArrayList();
+        ArrayList<Long> newWords2ID = new ArrayList();
+
+        /* Woerter der Sprache 1 uebernehmen. */
+        for (String word : words1) {
+            word = word.trim();
+
+            if (!word.equals("")) {
+                ContentValues cvWord = new ContentValues();
+
+                cvWord.put("Lang", lang1);
+                cvWord.put("Word", word);
+
+                newWords1ID.add(db.insert("VocabWords", null, cvWord));
+            }
+        }
+
+        /* Woerter der Sprache 2 uebernehmen. */
+        for (String word : words2) {
+            word = word.trim();
+
+            if (!word.equals("")) {
+                ContentValues cvWord = new ContentValues();
+
+                cvWord.put("Lang", lang2);
+                cvWord.put("Word", word);
+
+                newWords2ID.add(db.insert("VocabWords", null, cvWord));
+            }
+        }
+
+        if (newWords1ID.size() == 0 || newWords2ID.size() == 0) {
+            db.endTransaction();
+            return 0;
+        }
+
+        /* Relation zwischen den Woertern in Datenbank aufnehmen. */
+        for (Long ID1 : newWords1ID) {
+            for (Long ID2 : newWords2ID) {
+                ContentValues cvWordRelation = new ContentValues();
+
+                cvWordRelation.put("SetID", setid);
+                cvWordRelation.put("GroupID", wordgroupid);
+                cvWordRelation.put("WordA", ID1);
+                cvWordRelation.put("WordB", ID2);
+
+                db.insert("VocabReleation", null, cvWordRelation);
+            }
+        }
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
+
+        return wordgroupid;
+    }
+
+    /*
+     *
+     */
+    public void deleteWordGroup(long setid, int wordgroupid) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ")");
+        db.delete("VocabReleation", "SetID=? AND GroupID=?", new String[] {Long.toString(setid), Integer.toString(wordgroupid)});
+
+        db.execSQL("UPDATE VocabReleation SET GroupID = GroupID - 1 WHERE SetID=" + Long.toString(setid) + " AND GroupID > " + Integer.toString(wordgroupid));
     }
 }

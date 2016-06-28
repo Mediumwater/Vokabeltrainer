@@ -36,7 +36,7 @@ import de.htwdd.vokabeltrainer.helper.LanguageHelper;
 public class StatistikActivity extends AppCompatActivity implements OnChartValueSelectedListener {
 
     public HorizontalBarChart bc;
-    public ArrayList<DBHelper.VocabSets> vocabsets;
+    public ArrayList<DBHelper.VocabSet> vocabsets;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +85,7 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
 
         DBHelper db = new DBHelper(this);
         vocabsets = db.getAllVocabSetsWithRatio();
-        LanguageHelper lh = new LanguageHelper();
+        LanguageHelper lh = LanguageHelper.getInstance();
 
         /*for (int i = 0; i < count; i++) {
             xVals.add("" + i);
@@ -93,7 +93,7 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
         }*/
 
         int i = 0;
-        for (DBHelper.VocabSets e : vocabsets) {
+        for (DBHelper.VocabSet e : vocabsets) {
             xVals.add(e.description + " (" + lh.getLanguageNameByCode(e.lang1) + " - " + lh.getLanguageNameByCode(e.lang2) + ")");
             yVals1.add(new BarEntry((float) (e.ratio * 100), i));
             i++;
@@ -145,7 +145,7 @@ public class StatistikActivity extends AppCompatActivity implements OnChartValue
      */
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
-        DBHelper.VocabSets vs = vocabsets.get(e.getXIndex());
+        DBHelper.VocabSet vs = vocabsets.get(e.getXIndex());
 
         Intent startIntent;
         startIntent = new Intent(getApplicationContext(), StatistikDetailActivity.class);
