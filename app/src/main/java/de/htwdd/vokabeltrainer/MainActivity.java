@@ -3,16 +3,24 @@ package de.htwdd.vokabeltrainer;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
+
+import java.util.ArrayList;
+
+import de.htwdd.vokabeltrainer.helper.DBHelper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -72,16 +80,31 @@ public class MainActivity extends AppCompatActivity
             /**
              * TODO: Vokabelsets aus DB auslesen und generisch zur Auswahl zur Verfügung stellen, sowie merken, welches Set zuletzt ausgewählt war (shared preference)
              */
-            String choice_set[]= {"Alltag", "Business", "Blah", "Blubb"};
+            final SharedPreferences.Editor prefs =  getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
+
+            DBHelper db = new DBHelper(this);
+            final ArrayList<DBHelper.VocabSet> al = db.getAllVocabSetsForMain();
+            final String choice_set[] = new String[al.size()];
+            int i=0;
+            for (DBHelper.VocabSet vs : al){
+                choice_set[i]= vs.description;
+            }
+            Log.d("232323","Hier");
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Vokabelset auswählen")
                     .setItems(choice_set, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            // The 'which' argument contains the index position
-                            // of the selected item
+                            prefs.putString("Set_Name" ,al.get(which).description);
+                            prefs.putString("Set_ID" , Long.toString(al.get(which).id));
+                            prefs.commit();
                         }
                     });
             builder.create().show();
+
+            fragment = new FreitextFragment();
+            FragmentManager fragmentManager = getFragmentManager();
+
+            fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
 
         } else if (id == R.id.nav_changelang) {
             //=====================================================================================================

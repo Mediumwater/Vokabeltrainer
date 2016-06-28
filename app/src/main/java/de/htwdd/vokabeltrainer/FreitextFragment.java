@@ -3,6 +3,7 @@ package de.htwdd.vokabeltrainer;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -30,20 +31,30 @@ public class FreitextFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        DBHelper db = new DBHelper(listener);
-
-        Log.d("set id in training", "setid.toString()");
-
-        //ArrayList<DBHelper.VocabWord> vw = db.getRandomVocabWord(setid.intValue());
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_freitext, container , false);
+        DBHelper db = new DBHelper(listener);
+        View RootView = inflater.inflate(R.layout.fragment_freitext, container , false);
+        SharedPreferences prefs = listener.getSharedPreferences(
+                "de.htwdd.vokabeltrainer", listener.MODE_PRIVATE);
+        String setid = prefs.getString("Set_ID", "" );
+        long t = Long.parseLong(setid);
+        if (setid == null)
+            return RootView;
+
+        //ArrayList<ArrayList<DBHelper.VocabWord>> al =  db.getRandomVocabWord(setid.intValue());
+
+
+
+        //ArrayList<DBHelper.VocabWord>
+
+
+
+        return RootView;
     }
 
     // This event is triggered soon after onCreateView().

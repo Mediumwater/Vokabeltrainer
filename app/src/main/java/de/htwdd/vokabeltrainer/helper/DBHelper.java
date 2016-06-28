@@ -128,6 +128,21 @@ public class DBHelper extends SQLiteOpenHelper {
         return cur;
     }
 
+    public  ArrayList<VocabSet> getAllVocabSetsForMain() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets", null);
+        cur.moveToFirst();
+        ArrayList<VocabSet> al = new ArrayList<VocabSet>();
+        do {
+            al.add(new VocabSet(cur.getInt(0), cur.getString(1), cur.getString(2), cur.getString(3)));
+        } while (cur.moveToNext());
+
+        return al;
+    }
+
+
+
+
     /*
      * Gibt die Grunddaten des Vokabel-Sets mit der gegebenen ID zurück.
      */
@@ -289,15 +304,11 @@ public class DBHelper extends SQLiteOpenHelper {
         return this.getVocabWords(setid, random.nextInt(cnt));
     }
 
-
-
-
-/*
-    public ArrayList<VocabWord> getRandomVocabWord(int setid) {
+    public ArrayList<ArrayList<VocabWord>> getRandomVocabWord(int setid) {
         Log.d("DEBUGaaa", setid + "");
-        ArrayList<VocabWord> al = new ArrayList<>();
+        ArrayList<ArrayList<VocabWord>> al = new ArrayList<ArrayList<VocabWord>>();
         int cnt = this.getVocabGroupCount(setid);
-        if (cnt <= 0) return al;
+       // if (cnt <= 0) return al;
         Random random = new Random();
         Log.d("DEBUGaaa", "Here ia222m");
         ArrayList<Cursor> cursors = this.getVocabWords(setid, random.nextInt(cnt));
@@ -319,7 +330,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return al;
     }
-    */
+
 
     public boolean updateMisses(int setID, Long wordA_ID, Long wordB_ID ) {
         SQLiteDatabase db = this.getWritableDatabase();
