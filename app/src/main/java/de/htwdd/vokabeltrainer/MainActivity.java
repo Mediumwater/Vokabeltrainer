@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -69,10 +70,22 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         Intent startIntent;
         //Fragment fragment =null;
+        DBHelper db = new DBHelper(this);
+        Cursor c = db.getAllVocabSets();
+        int setanz = c.getCount();
 
-        final SharedPreferences.Editor prefs =  getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
+        final SharedPreferences.Editor prefs = getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
+        if (setanz == 0){
+            startIntent = new Intent(getApplicationContext(), VokverActivity.class);
+            startActivity(startIntent);
+            return true;
+        }
 
         if (id == R.id.nav_vocab) {
+
+
+
+
             startIntent = new Intent(getApplicationContext(), VokverActivity.class);
             startActivity(startIntent);
             return true;
@@ -90,7 +103,7 @@ public class MainActivity extends AppCompatActivity
              * TODO: Vokabelsets aus DB auslesen und generisch zur Auswahl zur Verfügung stellen, sowie merken, welches Set zuletzt ausgewählt war (shared preference)
              */
 
-            DBHelper db = new DBHelper(this);
+            //DBHelper db = new DBHelper(this);
             final ArrayList<DBHelper.VocabSet> al = db.getAllVocabSetsForMain();
 
             final String choice_set[] = new String[al.size()];

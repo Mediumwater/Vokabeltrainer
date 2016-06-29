@@ -101,7 +101,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME , null, 1);
-        //context.deleteDatabase(DATABASE_NAME); // Datenbank immer wieder loeschen, damit onCreate-Methode aufgerufen wird.
+        context.deleteDatabase(DATABASE_NAME); // Datenbank immer wieder loeschen, damit onCreate-Methode aufgerufen wird.
     }
 
     @Override public void onCreate(SQLiteDatabase db) {
@@ -302,8 +302,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Random random = new Random();
         ArrayList<Cursor> c = this.getRandomVocabWords(setid);
-
-        if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in DBHelper"); return al;}
+        if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in getRandomVocabWord(int setid)"); return al;}
         int i = 0;
         al.add(new ArrayList<VocabWord>());
         for (Cursor cur : c) {

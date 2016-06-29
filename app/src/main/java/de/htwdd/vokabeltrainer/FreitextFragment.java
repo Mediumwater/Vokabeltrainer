@@ -41,6 +41,7 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
     private TextView CheatTV;
     private EditText et;
     private DBHelper db;
+    Button bcheck;
 
     private Boolean evaluation;
 
@@ -66,14 +67,15 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         View rootView = inflater.inflate(R.layout.fragment_freitext, container , false);
 
         src = (TextView) rootView.findViewById(R.id.tvsrc);
-        Button bcheck = (Button) rootView.findViewById(R.id.bsetcheck);
+        this.bcheck = (Button) rootView.findViewById(R.id.bsetcheck);
         this.et = (EditText) rootView.findViewById(R.id.etans);
         this.destwordA = (TextView) rootView.findViewById(R.id.destwordA);
         this.destwordB = (TextView) rootView.findViewById(R.id.destwordB);
         this.CheatTV = (TextView) rootView.findViewById(R.id.CheatTV);
 
-
-
+        bcheck.setEnabled(false);
+        et.setEnabled(false);
+        //this.CheatTV.setEnabled(false);
 
 /*
         Button speech = (Button) rootView.findViewById(R.id.speech);
@@ -91,7 +93,10 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         });
 */
         bcheck.setOnClickListener(this);
+
+
         setVocabularyQuestion();
+
         return rootView;
     }
 
@@ -138,8 +143,13 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         if (setid == 0)
             return;
         ArrayList<ArrayList<DBHelper.VocabWord>> v = db.getRandomVocabWord(setid.intValue());
-        if (v.isEmpty())
-            return;
+        if (v.isEmpty()){
+            return;}
+
+        bcheck.setEnabled(true);
+        et.setEnabled(true);
+
+        Log.d("dfsadasd", "asdasdasd");
 
         if (evaluation) {
             this.source = v.get(0);
@@ -151,6 +161,7 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
 
 
         //this.CheatTV.setText(destination.get(0).word); // unkomment to see the right answer in the View
+
 
         Random r = new Random();
         int nr = (r.nextInt(source.size()));

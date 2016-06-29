@@ -136,7 +136,8 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
 
         ArrayList<ArrayList<DBHelper.VocabWord>> v = db.getRandomVocabWord();
 
-
+        if (v.isEmpty()){
+            return;}
 
         if (evaluation) {
             this.source = v.get(0);
