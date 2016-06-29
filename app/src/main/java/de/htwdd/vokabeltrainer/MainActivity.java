@@ -30,6 +30,8 @@ import de.htwdd.vokabeltrainer.helper.LanguageHelper;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private Fragment fragment = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         /**
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         Intent startIntent;
-        Fragment fragment =null;
+        //Fragment fragment =null;
 
         final SharedPreferences.Editor prefs =  getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
 
@@ -100,22 +102,25 @@ public class MainActivity extends AppCompatActivity
                 i++;
             }
 
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Vokabelset auswählen")
                     .setItems(choice_set, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             prefs.putString("Set_Name" ,al.get(which).description);
                             prefs.putLong("Set_ID" , al.get(which).id );
-                            prefs.putString("LangA" ,al.get(which).lang1);
+                            prefs.putString("LangA" ,al.get(which).lang1    );
                             prefs.putString("LangB" ,al.get(which).lang2);
                             prefs.commit();
 
                             ((RelativeLayout)findViewById(R.id.welcome_frame)).setVisibility(View.GONE); // Willkommenstext ausblenden. Warum passiert das eigentlich nicht beim Ersetzen von R.id.mainframe automatisch?
-                            Fragment fragment = new FreitextFragment();
-                            FragmentManager fragmentManager = getFragmentManager();
 
-                            fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
-
+                            //fragment = new FreitextFragment();
+                            if (fragment != null) {
+                                FragmentManager fragmentManager = getFragmentManager();
+                                fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
+                                fragmentManager.beginTransaction().detach(fragment).attach(fragment).commit();
+                            }
                         }
                     });
 
@@ -151,9 +156,11 @@ public class MainActivity extends AppCompatActivity
                                 prefs.putBoolean("evaluation", false);
                             }
                             prefs.commit();
-                            Fragment fragment = new FreitextFragment();
-                            FragmentManager fragmentManager = getFragmentManager();
-                            fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
+                            if (fragment != null) {
+                                FragmentManager fragmentManager = getFragmentManager();
+                                fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
+                                fragmentManager.beginTransaction().detach(fragment).attach(fragment).commit();
+                            }
 
                         }
                     });

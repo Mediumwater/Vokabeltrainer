@@ -41,6 +41,7 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
     public TextView secrettv;
     FragmentActivity listener;
     private Boolean evaluation = true;
+    private ArrayList<DBHelper.VocabWord> secretgroup;
 
     private ArrayList<DBHelper.VocabWord> source;
     private ArrayList<DBHelper.VocabWord> destination;
@@ -152,6 +153,7 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
 
         nr = (r.nextInt(destination.size()));
         this.secret = destination.get(nr);
+        this.secretgroup = destination;
 
         nr = (r.nextInt(4));
         int innernr=0;
@@ -162,16 +164,14 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
                 tv.setText(this.secret.word);
             } else {
                 ArrayList<ArrayList<DBHelper.VocabWord>> newVok = db.getRandomVocabWord();
-
+                ArrayList<DBHelper.VocabWord> randomDestinationGroup;
                 if (this.evaluation) {
-                    ArrayList<DBHelper.VocabWord> randomDestinationGroup = newVok.get(1);
-                    innernr = (r.nextInt(randomDestinationGroup.size()));
-                    tv.setText(randomDestinationGroup.get(innernr).word);
+                    randomDestinationGroup = newVok.get(1);
                 }else {
-                    ArrayList<DBHelper.VocabWord> randomDestinationGroup = newVok.get(0);
-                    innernr = (r.nextInt(randomDestinationGroup.size()));
-                    tv.setText(randomDestinationGroup.get(innernr).word);
+                    randomDestinationGroup = newVok.get(0);
                 }
+                innernr = (r.nextInt(randomDestinationGroup.size()));
+                tv.setText(randomDestinationGroup.get(innernr).word);
             }
             i++;
         }
@@ -189,6 +189,9 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
             tv.setBackgroundColor(Color.parseColor("#FF4E4E")); // anstatt Color.RED
         }
         //(int setID, int word_ID) {
+
+
+
         if (v.getText().equals(this.secret.word)) {
             db.updateHits(question.setid, question.wordid, secret.wordid, evaluation);
         } else {
