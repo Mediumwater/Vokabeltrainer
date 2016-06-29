@@ -148,8 +148,9 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
 
         bcheck.setEnabled(true);
         et.setEnabled(true);
-
-        Log.d("dfsadasd", "asdasdasd");
+        bcheck.setVisibility(View.VISIBLE);
+        et.setVisibility(View.VISIBLE);
+        this.CheatTV.setText("");
 
         if (evaluation) {
             this.source = v.get(0);

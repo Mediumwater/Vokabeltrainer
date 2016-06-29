@@ -107,7 +107,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bisher existieren keine Sets, \naber lad dich doch eins Herunter unter: \n Vorkabelsets verwalten"
+            android:text="Du hast noch kein Set ausgewählt!\n Unter: \n\nTraining anpassen -> Vokabelset\n\nkannst du ein Sets auswählen\n\n Viel Spaß!"
             android:textAlignment="center"
             android:id="@+id/CheatTV"
             android:layout_gravity="center_horizontal" />
