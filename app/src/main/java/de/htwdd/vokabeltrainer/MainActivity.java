@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Fragment fragment = null;
+    private int setanz = 0;
+    private DBHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,22 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        db = new DBHelper(this);
+        Cursor c = db.getAllVocabSets();
+        setanz = c.getCount();
+
+
+        if (setanz != 0){
+            TextView welcome1 = (TextView) findViewById(R.id.welcome1);
+            TextView welcome2 = (TextView) findViewById(R.id.welcome2);
+            welcome1.setText("");
+            welcome2.setText("");
+        }
+
+
+
     }
 
     @Override
@@ -70,9 +89,6 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         Intent startIntent;
         //Fragment fragment =null;
-        DBHelper db = new DBHelper(this);
-        Cursor c = db.getAllVocabSets();
-        int setanz = c.getCount();
 
         final SharedPreferences.Editor prefs = getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
         if (setanz == 0){
@@ -82,9 +98,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (id == R.id.nav_vocab) {
-
-
-
 
             startIntent = new Intent(getApplicationContext(), VokverActivity.class);
             startActivity(startIntent);
