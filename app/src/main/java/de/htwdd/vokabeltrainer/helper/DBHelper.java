@@ -299,9 +299,11 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     public ArrayList<Cursor> getRandomVocabWords(int setid) {
         int cnt = this.getVocabGroupCount(setid);
-        if (cnt <= 0) return new ArrayList<Cursor>();
+        if (cnt <= 0) {
+            return new ArrayList<Cursor>();
+        }
         Random random = new Random();
-        return this.getVocabWords(setid, random.nextInt(cnt));
+        return this.getVocabWords(setid, random.nextInt(cnt)+1);
     }
 
     public ArrayList<ArrayList<VocabWord>> getRandomVocabWord(int setid) {
@@ -325,8 +327,6 @@ public class DBHelper extends SQLiteOpenHelper {
         } finally {
            //cursors.close();
         }
-
-
 
         return al;
     }
@@ -354,12 +354,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public ArrayList<ArrayList<VocabWord>> getRandomVocabWord() {
         Cursor cursor = this.getAllVocabSets();
         int setcount = cursor.getCount();
-
         ArrayList<ArrayList<VocabWord>> al = new ArrayList<ArrayList<VocabWord>>();
-
         if (setcount <= 0) {Log.d("DEBUG", "setcount = " + setcount); return al;}
         ArrayList<String> sl = new ArrayList<>();
-
         try {
             do {
                 sl.add(cursor.getString(0));
@@ -367,13 +364,11 @@ public class DBHelper extends SQLiteOpenHelper {
         } finally {
             cursor.close();
         }
-
         Random r = new Random();
         int nr = (r.nextInt(setcount));
         int setid = Integer.parseInt(sl.get(nr));
         ArrayList<Cursor> c = getRandomVocabWords(setid);
         if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in DBHelper"); return al;}
-
         int i = 0;
         al.add(new ArrayList<VocabWord>());
         for (Cursor cur : c) {
@@ -384,19 +379,8 @@ public class DBHelper extends SQLiteOpenHelper {
             al.add(new ArrayList<VocabWord>());
             i++;
         }
-
         return al;
-
-       /* Log.d("DEBUGaaa", String.valueOf(setcount));
-        while (cursor.isAfterLast() == false) {
-            Log.d("DEBUGaasdsda", cursor.getString(0) + cursor.getString(1) + cursor.getString(2) + cursor.getString(3));
-                    //cursor.getString(1) + cursor.getString(2) + cursor.getInt(3) + cursor.getInt(4)
-            cursor.moveToNext();
-        }*/
     }
-
-
-
 
     /*
      * Erzeugt ein Vokabel-Set anhand eines JSON-Strings. Gibt true zurueck bei Erfolg, sonst false.
