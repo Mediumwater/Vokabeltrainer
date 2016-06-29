@@ -39,18 +39,19 @@ public class FreitextFragment extends Fragment {
         // Inflate the layout for this fragment
         DBHelper db = new DBHelper(listener);
         View RootView = inflater.inflate(R.layout.fragment_freitext, container , false);
+
         SharedPreferences prefs = listener.getSharedPreferences(
                 "de.htwdd.vokabeltrainer", listener.MODE_PRIVATE);
-        String setid = prefs.getString("Set_ID", "" );
-        long t = Long.parseLong(setid);
-        if (setid == null)
-            return RootView;
-
-        //ArrayList<ArrayList<DBHelper.VocabWord>> al =  db.getRandomVocabWord(setid.intValue());
+        Long setid = prefs.getLong("Set_ID", 0 );
 
 
+        ArrayList<ArrayList<DBHelper.VocabWord>> v = db.getRandomVocabWord(setid.intValue());
 
-        //ArrayList<DBHelper.VocabWord>
+        ArrayList<DBHelper.VocabWord> source = v.get(0);
+        ArrayList<DBHelper.VocabWord> destination = v.get(1);
+
+        
+
 
 
 

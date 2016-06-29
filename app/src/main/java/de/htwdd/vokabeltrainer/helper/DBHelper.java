@@ -297,6 +297,7 @@ public class DBHelper extends SQLiteOpenHelper {
      * ArrayList<Cursor> vocs = db.getRandomVocabWords(1);
      * // Rest wie beim Code-Beispiel zu getVocabWords()
      */
+
     public ArrayList<Cursor> getRandomVocabWords(int setid) {
         int cnt = this.getVocabGroupCount(setid);
         if (cnt <= 0) {
@@ -307,27 +308,23 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<ArrayList<VocabWord>> getRandomVocabWord(int setid) {
-        Log.d("DEBUGaaa", setid + "");
+
         ArrayList<ArrayList<VocabWord>> al = new ArrayList<ArrayList<VocabWord>>();
-        int cnt = this.getVocabGroupCount(setid);
-       // if (cnt <= 0) return al;
+
         Random random = new Random();
-        Log.d("DEBUGaaa", "Here ia222m");
-        ArrayList<Cursor> cursors = this.getVocabWords(setid, random.nextInt(cnt));
+        ArrayList<Cursor> c = this.getRandomVocabWords(setid);
 
-       // Log.d("DEBUGasadasdasdasaa", cursors.get(0).toString() );
-
-        try {
-            for (Cursor c : cursors) {
-                while (c.moveToNext()) {
-                    Log.d("DEBUGaaa", c.getInt(0) + c.getString(1));
-                    //sl.add(cursor.getString(0));
-                }
-            }
-        } finally {
-           //cursors.close();
+        if (c.isEmpty()) {Log.d("DEBUG", "getRandomVocabWords() is empty in DBHelper"); return al;}
+        int i = 0;
+        al.add(new ArrayList<VocabWord>());
+        for (Cursor cur : c) {
+            cur.moveToFirst();
+            do {
+                al.get(i).add(new VocabWord(cur.getInt(0), cur.getString(1), setid));
+            } while (cur.moveToNext());
+            al.add(new ArrayList<VocabWord>());
+            i++;
         }
-
         return al;
     }
 

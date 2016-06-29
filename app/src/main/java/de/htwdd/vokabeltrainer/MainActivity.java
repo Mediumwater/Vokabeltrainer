@@ -89,13 +89,13 @@ public class MainActivity extends AppCompatActivity
             for (DBHelper.VocabSet vs : al){
                 choice_set[i]= vs.description;
             }
-            Log.d("232323","Hier");
+            
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Vokabelset auswählen")
                     .setItems(choice_set, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             prefs.putString("Set_Name" ,al.get(which).description);
-                            prefs.putString("Set_ID" , Long.toString(al.get(which).id));
+                            prefs.putLong("Set_ID" , al.get(which).id );
                             prefs.commit();
                         }
                     });
@@ -122,6 +122,8 @@ public class MainActivity extends AppCompatActivity
                             // of the selected item
                         }
                     });
+            //SharedPreferences.Editor prefss =  getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
+
             builder.create().show();
 
         }else if (id == R.id.nav_mc) {
