@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,6 +40,11 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
     DBHelper.VocabWord secret;
     public TextView secrettv;
     FragmentActivity listener;
+    private Boolean evaluation = true;
+
+    private ArrayList<DBHelper.VocabWord> source;
+    private ArrayList<DBHelper.VocabWord> destination;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -122,10 +128,22 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
         DBHelper db = new DBHelper(listener);
         Random r = new Random();
 
+        SharedPreferences prefs = listener.getSharedPreferences(
+                "de.htwdd.vokabeltrainer", listener.MODE_PRIVATE);
+        Long setid = prefs.getLong("Set_ID", 0);
+        this.evaluation = prefs.getBoolean("evaluation", true);
+
         ArrayList<ArrayList<DBHelper.VocabWord>> v = db.getRandomVocabWord();
 
-        ArrayList<DBHelper.VocabWord> source = v.get(0);
-        ArrayList<DBHelper.VocabWord> destination = v.get(1);
+
+
+        if (evaluation) {
+            this.source = v.get(0);
+            this.destination = v.get(1);
+        } else {
+            this.source = v.get(1);
+            this.destination = v.get(0);
+        }
 
         int nr = (r.nextInt(source.size()));
 
@@ -144,9 +162,16 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
                 tv.setText(this.secret.word);
             } else {
                 ArrayList<ArrayList<DBHelper.VocabWord>> newVok = db.getRandomVocabWord();
-                ArrayList<DBHelper.VocabWord> randomDestinationGroup = newVok.get(1);
-                innernr = (r.nextInt(randomDestinationGroup.size()));
-                tv.setText(randomDestinationGroup.get(innernr).word);
+
+                if (this.evaluation) {
+                    ArrayList<DBHelper.VocabWord> randomDestinationGroup = newVok.get(1);
+                    innernr = (r.nextInt(randomDestinationGroup.size()));
+                    tv.setText(randomDestinationGroup.get(innernr).word);
+                }else {
+                    ArrayList<DBHelper.VocabWord> randomDestinationGroup = newVok.get(0);
+                    innernr = (r.nextInt(randomDestinationGroup.size()));
+                    tv.setText(randomDestinationGroup.get(innernr).word);
+                }
             }
             i++;
         }
@@ -165,9 +190,9 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
         }
         //(int setID, int word_ID) {
         if (v.getText().equals(this.secret.word)) {
-            db.updateHits(question.setid, question.wordid, secret.wordid, true);
+            db.updateHits(question.setid, question.wordid, secret.wordid, evaluation);
         } else {
-            db.updateMisses(question.setid, question.wordid, secret.wordid, true);
+            db.updateMisses(question.setid, question.wordid, secret.wordid, evaluation);
         }
 
         this.secrettv.setBackgroundColor(Color.parseColor("#77FF80")); //anstatt Color.GREEN
