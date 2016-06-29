@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity
         Intent startIntent;
         Fragment fragment =null;
 
+        final SharedPreferences.Editor prefs =  getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
+
         if (id == R.id.nav_vocab) {
             startIntent = new Intent(getApplicationContext(), VokverActivity.class);
             startActivity(startIntent);
@@ -80,22 +82,24 @@ public class MainActivity extends AppCompatActivity
             /**
              * TODO: Vokabelsets aus DB auslesen und generisch zur Auswahl zur Verfügung stellen, sowie merken, welches Set zuletzt ausgewählt war (shared preference)
              */
-            final SharedPreferences.Editor prefs =  getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
+
 
             DBHelper db = new DBHelper(this);
             final ArrayList<DBHelper.VocabSet> al = db.getAllVocabSetsForMain();
             final String choice_set[] = new String[al.size()];
             int i=0;
             for (DBHelper.VocabSet vs : al){
-                choice_set[i]= vs.description;
+                choice_set[i]= vs.description + " (" + vs.lang1.toUpperCase() + " - " + vs.lang2.toUpperCase() + ")" ;
             }
-            
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Vokabelset auswählen")
                     .setItems(choice_set, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             prefs.putString("Set_Name" ,al.get(which).description);
                             prefs.putLong("Set_ID" , al.get(which).id );
+                            prefs.putString("LangA" ,al.get(which).lang1);
+                            prefs.putString("LangB" ,al.get(which).lang2);
                             prefs.commit();
                         }
                     });
@@ -113,17 +117,35 @@ public class MainActivity extends AppCompatActivity
             /**
              * TODO: verfügbare Sprachrichtungen aus DB auslesen und generisch zur Auswahl zur Verfügung stellen, sowie merken, welche Sprachrichtung zuletzt ausgewählt war (shared preference)
              */
-            String choice_lang[]= {"Deutsch - Englisch", "Engisch - Deutsch", "Deutsch - Spanisch", "Spanisch - Deutsch"};
+
+            SharedPreferences prefss = getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE);
+
+            String langA = prefss.getString("LangA", "");
+            String langB = prefss.getString("LangB", "");
+
+            final String choice_lang[] = new String[2];
+
+            choice_lang[0]= langA.toUpperCase() + " -> " + langB.toUpperCase();
+            choice_lang[1]= langB.toUpperCase() + " -> " + langA.toUpperCase();
+
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Sprachrichtung auswählen")
-                    .setItems(choice_lang, new DialogInterface.OnClickListener() {
+                    .setItems(choice_lang,new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            // The 'which' argument contains the index position
-                            // of the selected item
+                            Log.d("erewrwe", which + "");
+                            if (which == 0) {
+                                prefs.putBoolean("evaluation", true);
+                            }else{
+                                Log.d("", which + " asdasd");
+                                prefs.putBoolean("evaluation", false);
+                            }
+                            prefs.commit();
+                            Fragment fragment = new FreitextFragment();
+                            FragmentManager fragmentManager = getFragmentManager();
+                            fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
+
                         }
                     });
-            //SharedPreferences.Editor prefss =  getSharedPreferences("de.htwdd.vokabeltrainer", MODE_PRIVATE).edit();
-
             builder.create().show();
 
         }else if (id == R.id.nav_mc) {

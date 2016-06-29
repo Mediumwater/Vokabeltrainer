@@ -131,16 +131,22 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         db = new DBHelper(listener);
         SharedPreferences prefs = listener.getSharedPreferences(
                 "de.htwdd.vokabeltrainer", listener.MODE_PRIVATE);
-        Long setid = prefs.getLong("Set_ID", 0 );
+        Long setid = prefs.getLong("Set_ID", 0);
+        Boolean evaluation = prefs.getBoolean("evaluation", true);
+
         if (setid == 0)
             return;
         ArrayList<ArrayList<DBHelper.VocabWord>> v = db.getRandomVocabWord(setid.intValue());
-
         if (v.isEmpty())
             return;
 
-        this.source = v.get(0);
-        this.destination = v.get(1);
+        if (evaluation) {
+            this.source = v.get(0);
+            this.destination = v.get(1);
+        } else {
+            this.source = v.get(1);
+            this.destination = v.get(0);
+        }
 
 
         //this.CheatTV.setText(destination.get(0).word); // unkomment to see the right answer in the View
