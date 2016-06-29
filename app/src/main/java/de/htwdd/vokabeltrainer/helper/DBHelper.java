@@ -470,8 +470,8 @@ public class DBHelper extends SQLiteOpenHelper {
                         cvWordRelation.put("WordB", bID);
 
                         // TODO: Test-Code, spaeter entfernen!
-                        cvWordRelation.put("Misses", random.nextInt(101));
-                        cvWordRelation.put("Hits", random.nextInt(101));
+                        //cvWordRelation.put("Misses", random.nextInt(101));
+                        //cvWordRelation.put("Hits", random.nextInt(101));
 
                         db.insert("VocabReleation", null, cvWordRelation);
                     }
@@ -517,6 +517,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public long createVocabSet(VocabSet vs) {
         if (vs.lang1.equals(vs.lang2)) return 0; // Beide Sprachen dieselben sind nicht erlaubt.
 
+        vs.description = vs.description.trim();
+        if (vs.description.equals("")) return 0;
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
 
@@ -540,6 +543,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public boolean updateVocabSet(VocabSet vs) {
         if (vs.lang1.equals(vs.lang2)) return false; // Beide Sprachen dieselben sind nicht erlaubt.
 
+        vs.description = vs.description.trim();
+        if (vs.description.equals("")) return false;
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cur = db.rawQuery("SELECT Lang1 FROM VocabSets WHERE SetID=" + Long.toString(vs.id), null);
@@ -551,7 +557,6 @@ public class DBHelper extends SQLiteOpenHelper {
         String old_lang1 = cur.getString(0);
 
         db.execSQL("UPDATE VocabSets SET Description='" + vs.description + "', Lang1='" + vs.lang1 + "', Lang2='" + vs.lang2 + "' WHERE SetID=" + Long.toString(vs.id));
-        Log.d("DEBUG", "UPDATE VocabSets SET Description='" + vs.description + "', Lang1='" + vs.lang1 + "', Lang2='" + vs.lang2 + "' WHERE SetID=" + Long.toString(vs.id));
 
         // Wort-Datenbank aktualisieren.
         db.execSQL("UPDATE VocabWords SET Lang = " +
@@ -583,6 +588,18 @@ public class DBHelper extends SQLiteOpenHelper {
         return this._insertWordGroup(db, setid, next_word_group_id, words1, words2);
     }
 
+    /*
+     * Aktualisiert die Vokabeln in einer Wortgruppe.
+     *
+     * Params:
+     * @setid: ID des Vokabel-Sets, dem die Wortgruppe angehört.
+     * @wordgroupid: ID der Wortgruppe, welche aktualisiert werden soll.
+     * @words1: Array mit den Wörtern der ersten Sprache.
+     * @words2: Array mit den Wörtern der zweiten Sprache.
+     *
+     * Return:
+     * Gibt true bei Erfolg zurück, sonst false.
+     */
     public boolean updateWordGroup(long setid, int wordgroupid, String[] words1, String[] words2) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -686,7 +703,11 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /*
+     * Entfernt eine Wortgruppe aus einem Vokabel-Set.
      *
+     * Params:
+     * @setid: ID des Vokabel-Sets, in dem sich die zu löschende Wortgruppe befindet.
+     * @wordgroupid: ID der Wortgruppe, welche gelöscht werden soll.
      */
     public void deleteWordGroup(long setid, int wordgroupid) {
         SQLiteDatabase db = this.getWritableDatabase();

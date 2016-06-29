@@ -1,5 +1,7 @@
 package de.htwdd.vokabeltrainer;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.support.v4.app.NavUtils;
@@ -97,9 +99,6 @@ public class EditWordGroup extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                /*Intent intent = NavUtils.getParentActivityIntent(this);
-                intent.putExtra("id", setid);
-                startActivity(intent);*/
                 backToParentActivity();
 
                 return true;
@@ -115,18 +114,25 @@ public class EditWordGroup extends AppCompatActivity {
         String[] words1 = tvWords1.getText().toString().split("\n");
         String[] words2 = tvWords2.getText().toString().split("\n");
 
-        // TODO: Prüfen, dass genügend Wörter in beide Felder eingegeben wurden.
-
         DBHelper db = new DBHelper(this);
+        boolean success = false;
 
         if (wordgroupid == 0) { // Neue Wort-Gruppe anlegen.
-            db.insertWordGroup(setid, words1, words2);
+            if (db.insertWordGroup(setid, words1, words2) > 0) success = true;
         } else { // Vorhandene Wort-Gruppe überschreiben.
-            db.updateWordGroup(setid, wordgroupid, words1, words2);
+            success = db.updateWordGroup(setid, wordgroupid, words1, words2);
         }
 
-        backToParentActivity();
-        Toast.makeText(this, "Die Wortgruppe wurde erfolgreich gespeichert.", Toast.LENGTH_LONG).show();
+        if (success) {
+            backToParentActivity();
+            Toast.makeText(this, "Die Wortgruppe wurde erfolgreich gespeichert.", Toast.LENGTH_LONG).show();
+        } else {
+            AlertDialog dialog = new AlertDialog.Builder(this).create();
+            dialog.setTitle("Fehlerhafte Eingabe");
+            dialog.setMessage("Die Wortgruppe kann nicht gespeichert werden. Bitte überprüfe deine Eingaben.");
+            dialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", (DialogInterface.OnClickListener)null);
+            dialog.show();
+        }
     }
 
     private void backToParentActivity() {

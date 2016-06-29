@@ -64,37 +64,32 @@ public class VocabDownloadHelper {
      * Laed Informationen ueber die, auf dem Server vorhandenen und herunterladbaren, Vokabel-Sets
      * herunter und gibt diese als ArrayList vom Typ DownloadableVocSet zurueck.
      */
-    public static ArrayList<DownloadableVocSet> getDownloadableVocabSets() {
+    public static ArrayList<DownloadableVocSet> getDownloadableVocabSets() throws Exception {
         InputStream xml_input_stream;
         ArrayList<DownloadableVocSet> vocs = new ArrayList();
 
-        try {
-            xml_input_stream = downloadFile(DOWNLOAD_BASE_URL + CONTENT_FILE);
+        xml_input_stream = downloadFile(DOWNLOAD_BASE_URL + CONTENT_FILE);
 
-            XmlPullParser parser = Xml.newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(xml_input_stream, null);
-            parser.nextTag();
+        XmlPullParser parser = Xml.newPullParser();
+        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+        parser.setInput(xml_input_stream, null);
+        parser.nextTag();
 
-            parser.require(XmlPullParser.START_TAG, null, "vocabsets");
+        parser.require(XmlPullParser.START_TAG, null, "vocabsets");
 
-            while (parser.next() != XmlPullParser.END_TAG) {
-                if (parser.getEventType() != XmlPullParser.START_TAG) {
-                    continue;
-                }
-
-                String name = parser.getName();
-
-                if (name.equals("vocabset")) {
-                    Log.d("DEBUG", "vocabset gefunden");
-                    vocs.add(xml_read_vocabset(parser));
-                } else {
-                    skip_xml_tags(parser);
-                }
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
             }
-        } catch (Exception e) {
-            // Nothing....
-            e.printStackTrace();
+
+            String name = parser.getName();
+
+            if (name.equals("vocabset")) {
+                Log.d("DEBUG", "vocabset gefunden");
+                vocs.add(xml_read_vocabset(parser));
+            } else {
+                skip_xml_tags(parser);
+            }
         }
 
         return vocs;
