@@ -3,10 +3,12 @@ package de.htwdd.vokabeltrainer;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.speech.RecognizerIntent;
 import android.support.v4.app.FragmentActivity;
 import android.text.Html;
 import android.text.Spannable;
@@ -68,11 +70,62 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         this.destwordB = (TextView) rootView.findViewById(R.id.destwordB);
         this.CheatTV = (TextView) rootView.findViewById(R.id.CheatTV);
 
+
+
+
+/*
+        Button speech = (Button) rootView.findViewById(R.id.speech);
+
+        speech.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "You may speak!");
+                intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
+                startActivityForResult(intent, 1);
+            }
+        });
+*/
         bcheck.setOnClickListener(this);
 
         setVocabularyQuestion();
         return rootView;
     }
+
+
+/*
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.mainframe);
+        fragment.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {//RESULT_OK become red
+            ArrayList<String> results;
+            results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            TextView speechText = (TextView)findViewById(R.id.textView1);//findViewByID become red
+            String str="";
+            for(int i=0;i<results.size();i++){
+                str+= results.get(i);
+            }
+            if (str.equals("five")) {
+                speechText.setText(str);
+            }else{
+                speechText.setText("It's not: " + str);
+            }
+        }
+    }
+*/
+
+
+
+
+
+
+
 
     public void setVocabularyQuestion() {
         db = new DBHelper(listener);
