@@ -164,18 +164,11 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
             tv.setBackgroundColor(Color.parseColor("#FF4E4E")); // anstatt Color.RED
         }
         //(int setID, int word_ID) {
-        if (v.getText() == this.secret.word) {
-
+        if (v.getText().equals(this.secret.word)) {
+            db.updateHits(question.setid, question.wordid, secret.wordid);
         } else {
             db.updateMisses(question.setid, question.wordid, secret.wordid);
         }
-
-        /*
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-        }
-        */
 
         this.secrettv.setBackgroundColor(Color.parseColor("#77FF80")); //anstatt Color.GREEN
 
@@ -186,27 +179,6 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
                 setVocabularyQuestion();
             }
         }, 2000);
-
-
-        
-
-
-        /*TextView v = (TextView) view;
-        switch(v.getId()) {
-            case R.id.choice1:
-                check();
-                break;
-            case R.id.choice2:
-                view.setBackgroundColor(Color.GREEN);
-                break;
-            case R.id.choice3:
-                view.setBackgroundColor(Color.GREEN);
-                break;
-            case R.id.choice4:
-                view.setBackgroundColor(Color.GREEN);
-                break;
-        }
-        */
     }
 
 }

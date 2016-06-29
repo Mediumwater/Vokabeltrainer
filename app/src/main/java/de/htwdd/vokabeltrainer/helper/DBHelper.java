@@ -177,16 +177,11 @@ public class DBHelper extends SQLiteOpenHelper {
                 "INNER JOIN VocabReleation r ON r.SetID = s.SetID " +
                 "GROUP BY s.SetID", null);
         cur.moveToFirst();
-
         ArrayList<VocabSet> al = new ArrayList<>();
-
-        //al.add("Testeintrag");
-
         while (cur.isAfterLast() == false) {
             al.add(new VocabSet(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
             cur.moveToNext();
         }
-
         return al;
     }
 
@@ -198,16 +193,11 @@ public class DBHelper extends SQLiteOpenHelper {
                 "INNER JOIN VocabReleation r ON r.SetID = s.SetID " +
                 "GROUP BY s.SetID", null);
         cur.moveToFirst();
-
         ArrayList<VocabSet> al = new ArrayList<>();
-
-        //al.add("Testeintrag");
-
         while (cur.isAfterLast() == false) {
             al.add(new VocabSet(cur.getString(0), cur.getString(1), cur.getString(2), cur.getInt(3), cur.getInt(4)));
             cur.moveToNext();
         }
-
         return al;
     }
 
@@ -219,14 +209,11 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cur = db.rawQuery("SELECT * FROM VocabWords", null);
         cur.moveToFirst();
-
         ArrayList<String> al = new ArrayList<>();
-
         while (cur.isAfterLast() == false) {
             al.add(cur.getString(cur.getColumnIndex("Word")));
             cur.moveToNext();
         }
-
         return al;
     }
 
@@ -335,6 +322,16 @@ public class DBHelper extends SQLiteOpenHelper {
                 + " and WordB = " + wordB_ID);
         return true;
     }
+
+    public boolean updateMisseswordA(int setID, Long wordA_ID) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID);
+        return true;
+    }
+
+
+
+
 
     public boolean updateHits(int setID, Long wordA_ID, Long wordB_ID ) {
         SQLiteDatabase db = this.getWritableDatabase();
