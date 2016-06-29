@@ -104,6 +104,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     @Override public void onCreate(SQLiteDatabase db) {
+        Log.d("DEBUG", "DBHelper.onCreate()");
         db.execSQL("CREATE TABLE VocabSets (SetID INTEGER PRIMARY KEY, Lang1 CHARACTER NOT NULL, Lang2 CHARACTER NOT NULL, Description VARCHAR NOT NULL)");
         db.execSQL("CREATE TABLE VocabWords (WordID INTEGER PRIMARY KEY, Lang CHARACTER NOT NULL, Word VARCHAR NOT NULL)");
         db.execSQL("CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, Misses INTEGER, Hits INTEGER, PRIMARY KEY (SetID, WordA, WordB))");

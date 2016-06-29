@@ -15,12 +15,17 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 
 import de.htwdd.vokabeltrainer.helper.DBHelper;
+import de.htwdd.vokabeltrainer.helper.LanguageHelper;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -88,8 +93,10 @@ public class MainActivity extends AppCompatActivity
 
             final String choice_set[] = new String[al.size()];
             int i=0;
+            LanguageHelper lh = LanguageHelper.getInstance();
+
             for (DBHelper.VocabSet vs : al){
-                choice_set[i]= vs.description + " (" + vs.lang1.toUpperCase() + " - " + vs.lang2.toUpperCase() + ")" ;
+                choice_set[i]= vs.description + " (" + lh.getLanguageNameByCode(vs.lang1) + " - " + lh.getLanguageNameByCode(vs.lang2) + ")" ;
                 i++;
             }
 
@@ -103,6 +110,7 @@ public class MainActivity extends AppCompatActivity
                             prefs.putString("LangB" ,al.get(which).lang2);
                             prefs.commit();
 
+                            ((RelativeLayout)findViewById(R.id.welcome_frame)).setVisibility(View.GONE); // Willkommenstext ausblenden. Warum passiert das eigentlich nicht beim Ersetzen von R.id.mainframe automatisch?
                             Fragment fragment = new FreitextFragment();
                             FragmentManager fragmentManager = getFragmentManager();
 
@@ -127,9 +135,10 @@ public class MainActivity extends AppCompatActivity
             String langB = prefss.getString("LangB", "");
 
             final String choice_lang[] = new String[2];
+            LanguageHelper lh = LanguageHelper.getInstance();
 
-            choice_lang[0]= langA.toUpperCase() + " -> " + langB.toUpperCase();
-            choice_lang[1]= langB.toUpperCase() + " -> " + langA.toUpperCase();
+            choice_lang[0]= lh.getLanguageNameByCode(langA) + " -> " + lh.getLanguageNameByCode(langB);
+            choice_lang[1]= lh.getLanguageNameByCode(langB) + " -> " + lh.getLanguageNameByCode(langA);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Sprachrichtung auswählen")
@@ -154,6 +163,7 @@ public class MainActivity extends AppCompatActivity
             //=====================================================================================================
             //Auf Trainingsmodus Multiple Choice umschalten, indem Fragment geladen wird
             //=====================================================================================================
+            ((RelativeLayout)findViewById(R.id.welcome_frame)).setVisibility(View.GONE); // Willkommenstext ausblenden. Warum passiert das eigentlich nicht beim Ersetzen von R.id.mainframe automatisch?
             fragment = new MultiChoiceFragment();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
@@ -165,7 +175,7 @@ public class MainActivity extends AppCompatActivity
             /**
              * TODO: Modus im entsprechenden Fragment implementieren und zuletzt verwendeten Modus merken (shared preference)
              */
-
+            ((RelativeLayout)findViewById(R.id.welcome_frame)).setVisibility(View.GONE); // Willkommenstext ausblenden. Warum passiert das eigentlich nicht beim Ersetzen von R.id.mainframe automatisch?
             fragment = new FreitextFragment();
             FragmentManager fragmentManager = getFragmentManager();
 
