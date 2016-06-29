@@ -83,13 +83,14 @@ public class MainActivity extends AppCompatActivity
              * TODO: Vokabelsets aus DB auslesen und generisch zur Auswahl zur Verfügung stellen, sowie merken, welches Set zuletzt ausgewählt war (shared preference)
              */
 
-
             DBHelper db = new DBHelper(this);
             final ArrayList<DBHelper.VocabSet> al = db.getAllVocabSetsForMain();
+
             final String choice_set[] = new String[al.size()];
             int i=0;
             for (DBHelper.VocabSet vs : al){
                 choice_set[i]= vs.description + " (" + vs.lang1.toUpperCase() + " - " + vs.lang2.toUpperCase() + ")" ;
+                i++;
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -101,14 +102,16 @@ public class MainActivity extends AppCompatActivity
                             prefs.putString("LangA" ,al.get(which).lang1);
                             prefs.putString("LangB" ,al.get(which).lang2);
                             prefs.commit();
+
+                            Fragment fragment = new FreitextFragment();
+                            FragmentManager fragmentManager = getFragmentManager();
+
+                            fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
+
                         }
                     });
+
             builder.create().show();
-
-            fragment = new FreitextFragment();
-            FragmentManager fragmentManager = getFragmentManager();
-
-            fragmentManager.beginTransaction().replace(R.id.mainframe, fragment).commit();
 
         } else if (id == R.id.nav_changelang) {
             //=====================================================================================================
@@ -136,7 +139,6 @@ public class MainActivity extends AppCompatActivity
                             if (which == 0) {
                                 prefs.putBoolean("evaluation", true);
                             }else{
-                                Log.d("", which + " asdasd");
                                 prefs.putBoolean("evaluation", false);
                             }
                             prefs.commit();

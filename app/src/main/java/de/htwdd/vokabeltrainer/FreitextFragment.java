@@ -89,7 +89,6 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         });
 */
         bcheck.setOnClickListener(this);
-
         setVocabularyQuestion();
         return rootView;
     }
@@ -134,12 +133,14 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         Long setid = prefs.getLong("Set_ID", 0);
         Boolean evaluation = prefs.getBoolean("evaluation", true);
 
+        Log.d("Hier", "Hier");
+
         if (setid == 0)
             return;
         ArrayList<ArrayList<DBHelper.VocabWord>> v = db.getRandomVocabWord(setid.intValue());
         if (v.isEmpty())
             return;
-
+        Log.d("Hier", "Hier");
         if (evaluation) {
             this.source = v.get(0);
             this.destination = v.get(1);
@@ -150,7 +151,7 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
 
 
         //this.CheatTV.setText(destination.get(0).word); // unkomment to see the right answer in the View
-
+        Log.d("Hier", "Hier");
         Random r = new Random();
         int nr = (r.nextInt(source.size()));
         src.setText(source.get(nr).word);
