@@ -42,7 +42,7 @@ public class VokverActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vokver);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Vokabeln verwalten");
+        toolbar.setTitle("Vokabelsets verwalten");
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -138,8 +138,8 @@ public class VokverActivity extends AppCompatActivity {
                         .setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                             @Override public boolean onMenuItemClick(MenuItem item) {
                                 AlertDialog dialog = new AlertDialog.Builder(VokverActivity.this).create();
-                                dialog.setTitle("Vokabel-Set löschen");
-                                dialog.setMessage("Soll das Vokabel-Set " + caption +"  wirklich gelöscht werden?");
+                                dialog.setTitle("Vokabelset löschen");
+                                dialog.setMessage("Soll das Vokabelset " + caption +"  wirklich gelöscht werden?");
 
                                 dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Nein", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog,int id) { dialog.cancel(); }
@@ -152,7 +152,7 @@ public class VokverActivity extends AppCompatActivity {
 
                                         VokverActivity.this.populateVocabSetsList();
 
-                                        String toastText = "Vokabel-Set  " + caption + " wurde gelöscht.";
+                                        String toastText = "Vokabelset  " + caption + " wurde gelöscht.";
                                         Toast.makeText(VokverActivity.this, toastText, Toast.LENGTH_SHORT).show();
 
                                         dialog.cancel();
@@ -202,7 +202,7 @@ public class VokverActivity extends AppCompatActivity {
 
                 AlertDialog dialog = new AlertDialog.Builder(VokverActivity.this).create();
                 dialog.setTitle("Fehler");
-                dialog.setMessage("Beim Abrufen der verfügbaren Vokabel-Sets ist ein Fehler aufgetreten.");
+                dialog.setMessage("Beim Abrufen der verfügbaren Vokabelsets ist ein Fehler aufgetreten.");
                 dialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", (DialogInterface.OnClickListener)null);
                 dialog.show();
             } else {
@@ -225,17 +225,46 @@ public class VokverActivity extends AppCompatActivity {
     /*
      * Asynchrones downloaden und installieren eines Vokabel-Sets.
      */
-    private class AsyncDownloadAndInstallVocabSetHelper extends AsyncTask<String, Void, Void> {
+    private class AsyncDownloadAndInstallVocabSetHelper extends AsyncTask<String, Void, Boolean> {
+        private ProgressDialog progressDialog;
+
         @Override
-        protected Void doInBackground(String... url) {
-            VocabDownloadHelper vdh = new VocabDownloadHelper(VokverActivity.this);
-            vdh.downloadAndInstallVocabSet(url[0]);
-            return null;
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(VokverActivity.this);
+            progressDialog.setMessage("Bitte warten...");
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
         }
 
         @Override
-        protected void onPostExecute(Void v) {
-            VokverActivity.this.populateVocabSetsList();
+        protected Boolean doInBackground(String... url) {
+            VocabDownloadHelper vdh = new VocabDownloadHelper(VokverActivity.this);
+
+            try {
+                vdh.downloadAndInstallVocabSet(url[0]);
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean successful) {
+            if (successful) {
+                VokverActivity.this.populateVocabSetsList();
+                progressDialog.dismiss();
+            } else {
+                progressDialog.dismiss();
+
+                AlertDialog dialog = new AlertDialog.Builder(VokverActivity.this).create();
+                dialog.setTitle("Fehler");
+                dialog.setMessage("Beim der Installation des Vokabelsets ist ein Fehler aufgetreten.");
+                dialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK", (DialogInterface.OnClickListener)null);
+                dialog.show();
+            }
         }
     }
 }

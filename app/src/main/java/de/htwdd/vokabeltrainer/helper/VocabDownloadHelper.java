@@ -170,25 +170,20 @@ public class VocabDownloadHelper {
         }
     }
 
-    public void downloadAndInstallVocabSet(String filename) {
-        try {
-            InputStream json_input_stream;
-            json_input_stream = downloadFile(DOWNLOAD_BASE_URL + filename);
+    public void downloadAndInstallVocabSet(String filename) throws Exception {
+        InputStream json_input_stream;
+        json_input_stream = downloadFile(DOWNLOAD_BASE_URL + filename);
 
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(json_input_stream, "utf-8"), 8);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(json_input_stream, "utf-8"), 8);
 
-            StringBuilder stringBuilder = new StringBuilder();
-            String line = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        String line = null;
 
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line + "\n");
-            }
-
-            DBHelper db = new DBHelper(this.ctx);
-            db.createVocabSetFromJSONString(stringBuilder.toString());
-        } catch (Exception e) {
-            // Nothing....
-            e.printStackTrace();
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line + "\n");
         }
+
+        DBHelper db = new DBHelper(this.ctx);
+        db.createVocabSetFromJSONString(stringBuilder.toString());
     }
 }

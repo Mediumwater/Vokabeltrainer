@@ -123,7 +123,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public Cursor getAllVocabSets()
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets", null);
+        Cursor cur = db.rawQuery("SELECT SetID AS _id, Description, Lang1, Lang2 FROM VocabSets ORDER BY Description", null);
         cur.moveToFirst();
         return cur;
     }
@@ -592,7 +592,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.beginTransaction();
 
-        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ")");
+        //db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ")");
+        db.execSQL("DELETE FROM VocabWords WHERE " +
+                "WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + " AND SetID=" + Long.toString(setid) + ") OR " +
+                "WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + " AND SetID=" + Long.toString(setid) + ")");
+
         db.delete("VocabReleation", "SetID=? AND GroupID=?", new String[] {Long.toString(setid), Integer.toString(wordgroupid)});
 
         if (this._insertWordGroup(db, setid, wordgroupid, words1, words2) == 0) {
@@ -696,7 +700,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public void deleteWordGroup(long setid, int wordgroupid) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        db.execSQL("DELETE FROM VocabWords WHERE WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ") OR WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + ")");
+        db.execSQL("DELETE FROM VocabWords WHERE " +
+                "WordID IN(SELECT WordA FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + " AND SetID=" + Long.toString(setid) + ") OR " +
+                "WordID IN(SELECT WordB FROM VocabReleation WHERE GroupID=" + Integer.toString(wordgroupid) + " AND SetID=" + Long.toString(setid) + ")");
+
         db.delete("VocabReleation", "SetID=? AND GroupID=?", new String[] {Long.toString(setid), Integer.toString(wordgroupid)});
 
         db.execSQL("UPDATE VocabReleation SET GroupID = GroupID - 1 WHERE SetID=" + Long.toString(setid) + " AND GroupID > " + Integer.toString(wordgroupid));
