@@ -7,6 +7,7 @@
         android:title="Vokabeln verwalten" />
     <item
         android:id="@+id/nav_stats"
+        android:icon="@mipmap/ic_insert_chart_black_24dp"
         android:title="Statistiken" />
 
     <item android:title="Trainingsmethode">
@@ -14,11 +15,11 @@
             <group android:checkableBehavior="single" >
                 <item
                     android:id="@+id/nav_mc"
-                    android:icon="@drawable/ic_menu_slideshow"
+                    android:icon="@mipmap/ic_done_all_black_24dp"
                     android:title="Multiple Choice" />
                 <item
                     android:id="@+id/nav_freetext"
-                    android:icon="@drawable/ic_menu_slideshow"
+                    android:icon="@mipmap/ic_mode_edit_black_24dp"
                     android:title="Freitext" />
             </group>
 
