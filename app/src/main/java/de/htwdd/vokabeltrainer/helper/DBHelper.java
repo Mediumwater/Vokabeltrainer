@@ -3,6 +3,7 @@ package de.htwdd.vokabeltrainer.helper;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
@@ -317,27 +318,60 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public boolean updateMisses(int setID, Long wordA_ID, Long wordB_ID ) {
+    public boolean updateMisses(int setID, Long wordA_ID, Long wordB_ID, boolean evaluation ) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
-                + " and WordB = " + wordB_ID);
+        if (evaluation) {
+            db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
+                    + " and WordB = " + wordB_ID);
+        } else {
+            db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + wordB_ID + " and SetID = " + setID
+                    + " and WordB = " + wordA_ID);
+        }
         return true;
     }
 
-    public boolean updateMisseswordA(int setID, Long wordA_ID) {
+
+    // "CREATE TABLE VocabReleation (SetID INTEGER, GroupID INTEGER, WordA INTEGER, WordB INTEGER, Misses INTEGER, Hits INTEGER, PRIMARY KEY (SetID, WordA, WordB))");
+    public boolean updateMissesword(int setID, Long wordA_ID, boolean evaluation) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID);
+       //Log.d("Hier", "Hier bei der DB bei updatemisseswordA");
+/*
+        Log.d("setID", "" + setID);
+        Log.d("wordA_ID", "" + wordA_ID);
+
+        SharedPreferences prefs = listener.getSharedPreferences(
+                "de.htwdd.vokabeltrainer", listener.MODE_PRIVATE);
+        Long setid = prefs.getLong("Set_ID", 0);
+        Boolean evaluation = prefs.getBoolean("evaluation", true);
+*/
+        if (evaluation) {
+            db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordA = " + Integer.toString(wordA_ID.intValue()) + " and SetID = " + Integer.toString(setID));
+        } else {
+            db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordB = " + Integer.toString(wordA_ID.intValue()) + " and SetID = " + Integer.toString(setID));
+        }
+/*
+        db.execSQL("UPDATE VocabReleation SET Misses = Misses + 1 WHERE WordB = " + 918 + " and SetID = " + 2);
+
+
+
+        SQLiteDatabase dbs = this.getReadableDatabase();
+        Cursor cur1 = dbs.rawQuery("Select * from VocabReleation where WordB = " + 918 + " and SetID = " + 2, null);
+        cur1.moveToFirst();
+        Log.d("Hier: ", cur1.getString(0) + " " + cur1.getString(1) + " " + cur1.getString(2) + " " + cur1.getString(3) + " " + cur1.getString(4) + " " + cur1.getString(5) );
+*/
+
         return true;
     }
 
-
-
-
-
-    public boolean updateHits(int setID, Long wordA_ID, Long wordB_ID ) {
+    public boolean updateHits(int setID, Long wordA_ID, Long wordB_ID, boolean evaluations) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("UPDATE VocabReleation SET Hits = Hits + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
-                + " and WordB = " + wordB_ID);
+        if (evaluations){
+            db.execSQL("UPDATE VocabReleation SET Hits = Hits + 1 WHERE WordA = " + wordA_ID + " and SetID = " + setID
+                    + " and WordB = " + wordB_ID);
+        } else {
+            db.execSQL("UPDATE VocabReleation SET Hits = Hits + 1 WHERE WordA = " + wordB_ID + " and SetID = " + setID
+                    + " and WordB = " + wordA_ID);
+        }
         return true;
     }
 

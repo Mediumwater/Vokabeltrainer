@@ -42,6 +42,8 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
     private EditText et;
     private DBHelper db;
 
+    private Boolean evaluation;
+
     private ArrayList<DBHelper.VocabWord> destination;
     private ArrayList<DBHelper.VocabWord> source;
 
@@ -131,16 +133,14 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         SharedPreferences prefs = listener.getSharedPreferences(
                 "de.htwdd.vokabeltrainer", listener.MODE_PRIVATE);
         Long setid = prefs.getLong("Set_ID", 0);
-        Boolean evaluation = prefs.getBoolean("evaluation", true);
-
-        Log.d("Hier", "Hier");
+        this.evaluation = prefs.getBoolean("evaluation", true);
 
         if (setid == 0)
             return;
         ArrayList<ArrayList<DBHelper.VocabWord>> v = db.getRandomVocabWord(setid.intValue());
         if (v.isEmpty())
             return;
-        Log.d("Hier", "Hier");
+
         if (evaluation) {
             this.source = v.get(0);
             this.destination = v.get(1);
@@ -151,7 +151,7 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
 
 
         //this.CheatTV.setText(destination.get(0).word); // unkomment to see the right answer in the View
-        Log.d("Hier", "Hier");
+
         Random r = new Random();
         int nr = (r.nextInt(source.size()));
         src.setText(source.get(nr).word);
@@ -198,7 +198,6 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
         DBHelper.VocabWord questionVW = null;
 
         boolean fail = true;
-        Log.d("hiewr","asdasdsa");
 
         String displayAnswerA = "";
         int beginColoringA = 0;
@@ -214,8 +213,6 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
             displayAnswerA += vwA.word + "\n\n";
         }
 
-        Log.d("hiewr","asdasdsa");
-
         String displayAnswerB = "";
         int beginColoringB = 0;
         int endColoringB = 0;
@@ -224,15 +221,18 @@ public class FreitextFragment extends Fragment implements View.OnClickListener {
                 beginColoringB = displayAnswerB.length();
                 endColoringB = beginColoringB + vwB.word.length();
                 questionVW = vwB;
+                Log.d("Hier", "Hier bei der DB");
+                Log.d("Hier", "fail = " + fail);
                 if (!fail)
-                    db.updateHits(questionVW.setid, answerVW.wordid, questionVW.wordid);
+                    db.updateHits(questionVW.setid, answerVW.wordid, questionVW.wordid, this.evaluation);
             }
             displayAnswerB += vwB.word + "\n\n";
         }
 
         if (fail){
-            Log.d("hiewr","asdasdsa");
-            db.updateMisseswordA(questionVW.setid, questionVW.wordid);
+            Log.d("Hier", "Hier bei der DB");
+            Log.d("Hier", "fail = " + fail);
+            db.updateMissesword(questionVW.setid, questionVW.wordid, this.evaluation);
         }
         Spannable spannableA = new SpannableString(displayAnswerA);
         spannableA.setSpan(new ForegroundColorSpan(Color.parseColor("#42A5F5")),

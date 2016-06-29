@@ -165,9 +165,9 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
         }
         //(int setID, int word_ID) {
         if (v.getText().equals(this.secret.word)) {
-            db.updateHits(question.setid, question.wordid, secret.wordid);
+            db.updateHits(question.setid, question.wordid, secret.wordid, true);
         } else {
-            db.updateMisses(question.setid, question.wordid, secret.wordid);
+            db.updateMisses(question.setid, question.wordid, secret.wordid, true);
         }
 
         this.secrettv.setBackgroundColor(Color.parseColor("#77FF80")); //anstatt Color.GREEN
