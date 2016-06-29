@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -149,9 +150,9 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
             }
             i++;
         }
-        //for (TextView tv : choice) {
-        //     tv.setBackgroundColor(Color.WHITE);
-        // }
+        for (TextView tv : choice) {
+            tv.setBackgroundColor(Color.WHITE);
+        }
     }
 
     @Override
@@ -160,7 +161,7 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
         TextView v = (TextView) view;
 
         for (TextView tv : choice) {
-            tv.setBackgroundColor(Color.RED);
+            tv.setBackgroundColor(Color.parseColor("#FF4E4E")); // anstatt Color.RED
         }
         //(int setID, int word_ID) {
         if (v.getText() == this.secret.word) {
@@ -169,14 +170,25 @@ public class MultiChoiceFragment extends Fragment implements View.OnClickListene
             db.updateMisses(question.setid, question.wordid, secret.wordid);
         }
 
+        /*
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
         }
+        */
 
-        this.secrettv.setBackgroundColor(Color.GREEN);
+        this.secrettv.setBackgroundColor(Color.parseColor("#77FF80")); //anstatt Color.GREEN
 
-        setVocabularyQuestion();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                // Actions to do after 10 seconds
+                setVocabularyQuestion();
+            }
+        }, 2000);
+
+
+        
 
 
         /*TextView v = (TextView) view;
